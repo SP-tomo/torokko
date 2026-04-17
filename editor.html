@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>トロッコアドベンチャー EDITOR</title>
+    <style>
+        body { font-family: sans-serif; background: #222; color: #fff; padding: 20px; }
+        .editor-container { max-width: 800px; margin: 0 auto; }
+        .card { background: #333; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; background: #444; border: 1px solid #555; color: #fff; }
+        button { background: #ffd700; color: #000; padding: 10px 20px; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        .back-link { color: #ffd700; text-decoration: none; margin-bottom: 20px; display: inline-block; }
+        .q-item { border-bottom: 1px solid #555; padding-bottom: 20px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <a href="/" class="back-link">← GAME BACK</a>
+        <h1>ENGINE EDITOR</h1>
+        
+        <div class="card">
+            <h2>Global Settings</h2>
+            <label>Current Theme</label>
+            <select id="theme-select">
+                <option value="cave">Cave (洞窟)</option>
+                <option value="jungle">Jungle (ジャングル)</option>
+                <option value="pyramid">Pyramid (ピラミッド)</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <h2>Questions (Edit JSON)</h2>
+            <textarea id="questions-json" rows="20"></textarea>
+            <button id="save-btn">SAVE CHANGES</button>
+        </div>
+    </div>
+
+    <script>
+        const textarea = document.getElementById('questions-json');
+        const themeSelect = document.getElementById('theme-select');
+        const saveBtn = document.getElementById('save-btn');
+
+        // Load existing
+        async function load() {
+            const localData = localStorage.getItem('trolley_questions');
+            if (localData) {
+                textarea.value = localData;
+            } else {
+                const resp = await fetch('/assets/data/questions.json');
+                const data = await resp.json();
+                textarea.value = JSON.stringify(data, null, 2);
+            }
+
+            const localTheme = localStorage.getItem('trolley_settings');
+            if (localTheme) {
+                const settings = JSON.parse(localTheme);
+                themeSelect.value = settings.theme || 'cave';
+            }
+        }
+
+        saveBtn.onclick = () => {
+            try {
+                const data = JSON.parse(textarea.value);
+                localStorage.setItem('trolley_questions', textarea.value);
+                localStorage.setItem('trolley_settings', JSON.stringify({ theme: themeSelect.value }));
+                alert('Saved to LocalStorage! (Game will prioritize this)');
+            } catch (e) {
+                alert('Invalid JSON format!');
+            }
+        };
+
+        load();
+    </script>
+</body>
+</html>
