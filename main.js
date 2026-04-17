@@ -104,13 +104,9 @@ class TrolleyAdventure {
   }
 
   updateStage() {
-    // Stage logic: 1-3 Q: Cave, 4-6 Q: Jungle, 7-10 Q: Temple
-    if (this.currentIndex < 3) {
-      this.scene.setTheme('cave');
-    } else if (this.currentIndex < 6) {
-      this.scene.setTheme('jungle');
-    } else {
-      this.scene.setTheme('temple');
+    const q = this.questions[this.currentIndex];
+    if (q && q.theme) {
+      this.scene.setTheme(q.theme);
     }
   }
 
