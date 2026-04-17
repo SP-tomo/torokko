@@ -4,24 +4,30 @@ export class SceneManager {
     this.ctx = canvas.getContext('2d');
     this.theme = 'cave';
     this.speed = 1.0;
-    this.shake = 0;
+    this.shake = 2;
     this.images = {};
     this.isLoaded = false;
     this.frame = 0;
     this.particles = [];
     
+    // Infinite Tunnel Layers
+    this.layers = [
+        { z: 0 },
+        { z: 666 },
+        { z: 1333 }
+    ];
+
     this.loadImages();
     this.resize();
     window.addEventListener('resize', () => this.resize());
   }
 
   async loadImages() {
-    console.log("Loading realistic assets...");
     const loader = (src) => new Promise((res, rej) => {
       const img = new Image();
       img.src = src;
-      img.onload = () => { console.log("Loaded:", src); res(img); };
-      img.onerror = () => { console.error("Failed to load:", src); rej(); };
+      img.onload = () => res(img);
+      img.onerror = () => rej();
     });
 
     try {
@@ -35,7 +41,6 @@ export class SceneManager {
       this.isLoaded = true;
     } catch (e) {
       console.error("Image loading failed");
-      this.isLoaded = false;
     }
   }
 
@@ -45,73 +50,75 @@ export class SceneManager {
   }
 
   setTheme(theme) {
-    if (this.theme !== theme) {
-      this.theme = theme;
-      this.particles = []; // Clear particles on theme change
-    }
+    this.theme = theme;
   }
 
   update() {
     this.frame++;
+    // Move layers
+    this.layers.forEach(l => {
+        l.z -= 10 * this.speed;
+        if (l.z <= 0) l.z = 2000;
+    });
     this.draw();
     requestAnimationFrame(() => this.update());
   }
 
   draw() {
     if (!this.isLoaded) return;
-
     const w = this.canvas.width;
     const h = this.canvas.height;
     
-    // 1. Camera Shake/Bobbing
-    const bobY = Math.sin(this.frame * 0.1) * 2 * this.speed;
+    this.ctx.fillStyle = '#000';
+    this.ctx.fillRect(0, 0, w, h);
+
     const jitterX = (Math.random() - 0.5) * this.shake * this.speed;
     const jitterY = (Math.random() - 0.5) * this.shake * this.speed;
 
-    this.ctx.clearRect(0, 0, w, h);
-    
     const img = this.images[this.theme];
     if (img) {
-      // 2. VIDEO-LIKE ZOOM EFFECT
-      // Simulating moving through a tunnel by oscillating zoom level
-      const baseScale = Math.max(w / img.width, h / img.height);
-      const zoomCycle = (Math.sin(this.frame * 0.02 * this.speed) + 1) * 0.05 + 1.0; 
-      const scale = baseScale * zoomCycle;
+      // Draw layers from far to near
+      const sortedLayers = [...this.layers].sort((a, b) => b.z - a.z);
       
-      const iw = img.width * scale;
-      const ih = img.height * scale;
-      const ix = (w - iw) / 2 + jitterX;
-      const iy = (h - ih) / 2 + jitterY + bobY;
-      
-      this.ctx.drawImage(img, ix, iy, iw, ih);
+      sortedLayers.forEach(l => {
+        const scale = 2000 / (l.z || 1);
+        const baseScale = Math.max(w / img.width, h / img.height);
+        const finalScale = baseScale * scale * 0.5;
+        
+        const iw = img.width * finalScale;
+        const ih = img.height * finalScale;
+        const ix = (w - iw) / 2 + jitterX;
+        const iy = (h - ih) / 2 + jitterY;
+        
+        // Alpha based on depth
+        this.ctx.globalAlpha = Math.min(1.0, (2000 - l.z) / 500);
+        this.ctx.drawImage(img, ix, iy, iw, ih);
+      });
+      this.ctx.globalAlpha = 1.0;
     }
-    
-    // 3. THEME-SPECIFIC PARTICLES
+
     this.updateParticles(w, h);
     this.drawParticles();
-    
-    // 4. OVERLAY SPEED LINES
+
     if (this.speed > 1) {
       this.drawSpeedLines(w, h);
     }
   }
 
   updateParticles(w, h) {
-    // Generate particles based on theme
-    if (this.particles.length < 50) {
+    if (this.particles.length < 100) {
       this.particles.push({
         x: Math.random() * w,
         y: Math.random() * h,
-        z: Math.random() * 1000,
+        z: Math.random() * 2000,
         s: Math.random() * 2 + 1,
         color: this.getParticleColor()
       });
     }
-
     this.particles.forEach(p => {
-      p.z -= 10 * this.speed;
+      p.z -= 15 * this.speed;
       if (p.z <= 0) {
-        p.z = 1000;
+        p.z = 2000;
         p.x = Math.random() * w;
         p.y = Math.random() * h;
       }
@@ -121,44 +128,35 @@ export class SceneManager {
   getParticleColor() {
     switch(this.theme) {
       case 'ice': return 'rgba(200, 230, 255, 0.8)';
-      case 'underwater': return 'rgba(255, 255, 255, 0.5)'; // Bubbles
-      case 'temple': return 'rgba(255, 100, 0, 0.8)'; // Embers
-      case 'space': return 'rgba(255, 255, 255, 0.9)'; // Stars
-      case 'jungle': return 'rgba(100, 200, 100, 0.6)'; // Leaves
-      default: return 'rgba(255, 255, 255, 0.3)';
+      case 'underwater': return 'rgba(255, 255, 255, 0.5)';
+      case 'temple': return 'rgba(255, 100, 0, 0.8)';
+      case 'space': return 'rgba(255, 255, 255, 0.9)';
+      default: return 'rgba(255, 255, 255, 0.2)';
     }
   }
 
   drawParticles() {
     const w = this.canvas.width;
     const h = this.canvas.height;
-    
     this.particles.forEach(p => {
-      const scale = 500 / p.z;
+      const scale = 1000 / p.z;
       const x = (p.x - w/2) * scale + w/2;
       const y = (p.y - h/2) * scale + h/2;
       const size = p.s * scale;
-      
       this.ctx.fillStyle = p.color;
-      if (this.theme === 'underwater') {
-        this.ctx.beginPath();
-        this.ctx.arc(x, y, size, 0, Math.PI * 2);
-        this.ctx.fill();
-      } else {
-        this.ctx.fillRect(x, y, size, size);
-      }
+      this.ctx.fillRect(x, y, size, size);
     });
   }
 
   drawSpeedLines(w, h) {
     this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    this.ctx.lineWidth = 2;
-    for (let i = 0; i < 20; i++) {
+    this.ctx.lineWidth = 1;
+    for (let i = 0; i < 30; i++) {
       const x = Math.random() * w;
       const y = Math.random() * h;
       this.ctx.beginPath();
       this.ctx.moveTo(x, y);
-      this.ctx.lineTo(x + (x - w/2) * 0.2 * this.speed, y + (y - h/2) * 0.2 * this.speed);
+      this.ctx.lineTo(x + (x - w/2) * 0.3 * this.speed, y + (y - h/2) * 0.3 * this.speed);
       this.ctx.stroke();
     }
   }

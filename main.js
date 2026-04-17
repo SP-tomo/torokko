@@ -1,5 +1,6 @@
 import { SoundEngine } from './src/modules/SoundEngine.js';
 import { SceneManager } from './src/modules/SceneManager.js';
+import { SyncManager } from './src/modules/SyncManager.js';
 
 const GameState = {
   TITLE: 'TITLE',
@@ -9,27 +10,19 @@ const GameState = {
   GAMEOVER: 'GAMEOVER'
 };
 
-class TrolleyAdventure {
+class TrolleyAdventureDisplay {
   constructor() {
     this.state = GameState.TITLE;
     this.questions = [];
     this.currentIndex = 0;
     this.timer = 5.0;
-    this.timerInterval = null;
     this.selectedChoice = null;
     
-    // Modules
     this.sounds = new SoundEngine();
     this.canvas = document.getElementById('bg-canvas');
     this.scene = new SceneManager(this.canvas);
-    
-    // Versioning / Forced Update
-    if (localStorage.getItem('trolley_version') !== '1.1') {
-      localStorage.removeItem('trolley_questions');
-      localStorage.setItem('trolley_version', '1.1');
-    }
+    this.sync = new SyncManager(false);
 
-    // Elements
     this.els = {
       app: document.getElementById('app'),
       qText: document.getElementById('question-text'),
@@ -42,7 +35,6 @@ class TrolleyAdventure {
       overlay: document.getElementById('overlay-layer'),
       overlayTitle: document.getElementById('overlay-title'),
       overlayDesc: document.getElementById('overlay-desc'),
-      startBtn: document.getElementById('start-btn'),
       qCounter: document.getElementById('q-index'),
       judgeOverlay: document.getElementById('judge-text-overlay'),
       particles: document.getElementById('particles-container'),
@@ -52,50 +44,49 @@ class TrolleyAdventure {
   }
 
   async init() {
-    // 1. Load Data
-    const localQuestions = localStorage.getItem('trolley_questions');
-    if (localQuestions) {
-      this.questions = JSON.parse(localQuestions);
-    } else {
-      const resp = await fetch('/assets/data/questions.json');
-      this.questions = await resp.json();
-    }
+    const resp = await fetch('/assets/data/questions.json');
+    this.questions = await resp.json();
 
-    // 2. Start Engines
     this.scene.update();
+    this.setupSync();
+    
+    // Auto-hide overlay after first sync or interaction
+    window.addEventListener('click', () => {
+        this.sounds.init();
+        this.hideOverlay();
+    }, { once: true });
 
-    // 3. Events
-    this.els.startBtn.onclick = () => this.startGame();
+    this.showOverlay("TROLLEY ADVENTURE", "WAITING FOR CONTROLLER...");
+  }
+
+  setupSync() {
+    this.sync.listen((type, payload) => {
+      console.log("SYNC:", type, payload);
+      switch(type) {
+        case 'JUMP_TO': this.jumpTo(payload.index); break;
+        case 'START_TIMER': this.startTimer(); break;
+        case 'JUDGE': this.showJudgement(payload.result === 'correct'); break;
+        case 'RESET': window.location.reload(); break;
+      }
+    });
+
+    // Keyboard support for local testing
     window.addEventListener('keydown', (e) => this.handleKeyDown(e));
-    this.els.choiceLeft.onclick = () => this.selectChoice('left');
-    this.els.choiceRight.onclick = () => this.selectChoice('right');
-
-    this.showOverlay("TROLLEY ADVENTURE", "全10問の試練に打ち勝て。");
   }
 
-  startGame() {
-    this.currentIndex = 0;
-    this.hideOverlay();
-    this.sounds.startBGM();
-    this.nextQuestion();
-  }
-
-  nextQuestion() {
-    if (this.currentIndex >= this.questions.length) {
-      this.finishGame(true);
-      return;
-    }
-
+  jumpTo(index) {
+    this.currentIndex = index;
     this.state = GameState.QUESTION;
     this.selectedChoice = null;
     this.timer = 5.0;
     this.updateHUD();
-    this.updateStage(); // Switch background if needed
+    this.hideOverlay();
     
+    const q = this.questions[index];
+    this.scene.setTheme(q.theme || 'cave');
     this.scene.speed = 1.0;
-    this.scene.shake = 2; // Default running vibration
-    
-    const q = this.questions[this.currentIndex];
+    this.scene.shake = 2;
+
     this.els.qText.innerText = q.question;
     this.els.textLeft.innerText = q.left.text;
     this.els.textRight.innerText = q.right.text;
@@ -105,35 +96,13 @@ class TrolleyAdventure {
     this.els.trolley.className = 'trolley';
     this.els.judgeOverlay.classList.remove('active');
     this.els.app.classList.remove('running', 'correct-bg-flash', 'shake');
-
-    this.startTimer();
-  }
-
-  updateStage() {
-    const q = this.questions[this.currentIndex];
-    if (q && q.theme) {
-      this.scene.setTheme(q.theme);
-    }
+    this.els.timerFill.style.transform = `scaleX(1)`;
+    
+    this.sounds.startBGM();
   }
 
   startTimer() {
-    if (this.timerInterval) clearInterval(this.timerInterval);
-    this.timerInterval = setInterval(() => {
-      this.timer -= 0.05;
-      this.els.timerFill.style.transform = `scaleX(${Math.max(0, this.timer / 5.0)})`;
-      if (this.timer < 1.0 && this.timer > 0) this.sounds.playTick();
-      if (this.timer <= 0) {
-        this.stopTimer();
-        this.autoJudge();
-      }
-    }, 50);
-  }
-
-  stopTimer() {
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-      this.timerInterval = null;
-    }
+    this.state = GameState.QUESTION;
   }
 
   handleKeyDown(e) {
@@ -144,80 +113,52 @@ class TrolleyAdventure {
 
   selectChoice(side) {
     if (this.state !== GameState.QUESTION) return;
-    if (this.selectedChoice === side) return; // Ignore if already selected
+    if (this.selectedChoice === side) return;
     
     this.selectedChoice = side;
-    this.sounds.playTick();
+    this.sounds.playSelect();
     this.els.choiceLeft.classList.toggle('selected', side === 'left');
     this.els.choiceRight.classList.toggle('selected', side === 'right');
     this.els.trolley.className = `trolley tilt-${side}`;
   }
 
-  autoJudge() {
+  showJudgement(isCorrect) {
     this.state = GameState.JUDGING;
     this.els.app.classList.add('running');
-    this.scene.speed = 5.0; 
-    this.scene.shake = 10; // Intense vibration during judge
-    
-    const q = this.questions[this.currentIndex];
-    const isCorrect = (this.selectedChoice === q.answer);
+    this.scene.speed = 5.0;
+    this.scene.shake = 15;
     
     setTimeout(() => {
-      this.showJudgement(isCorrect);
+      if (isCorrect) {
+        this.sounds.playCorrect();
+        this.els.app.classList.add('correct-bg-flash');
+        this.els.judgeOverlay.innerText = "正解";
+        this.els.judgeOverlay.className = "active text-correct";
+        this.createParticles('#ffd700');
+      } else {
+        this.sounds.playIncorrect();
+        this.els.app.classList.add('shake');
+        this.els.judgeOverlay.innerText = "不正解";
+        this.els.judgeOverlay.className = "active text-incorrect";
+        this.els.trolley.classList.add('fall');
+        this.scene.speed = 0;
+        this.scene.shake = 0;
+      }
     }, 1500);
   }
 
-  showJudgement(isCorrect) {
-    if (isCorrect) {
-      this.sounds.playCorrect();
-      this.els.app.classList.add('correct-bg-flash');
-      this.els.judgeOverlay.innerText = "正解";
-      this.els.judgeOverlay.className = "active text-correct";
-      this.createParticles('#ffd700');
-
-      setTimeout(() => {
-        this.currentIndex++;
-        this.nextQuestion();
-      }, 2500);
-    } else {
-      this.sounds.playIncorrect();
-      this.els.app.classList.add('shake');
-      this.els.judgeOverlay.innerText = "不正解";
-      this.els.judgeOverlay.className = "active text-incorrect";
-      this.els.trolley.classList.add('fall');
-      this.scene.speed = 0;
-      this.scene.shake = 0;
-
-      setTimeout(() => {
-        this.finishGame(false);
-      }, 2500);
-    }
-  }
-
   createParticles(color) {
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 100; i++) {
         const p = document.createElement('div');
-        p.style.position = 'absolute';
-        p.style.left = '50%';
-        p.style.top = '50%';
-        p.style.width = '10px';
-        p.style.height = '10px';
+        p.className = 'particle-spark';
         p.style.background = color;
-        p.style.borderRadius = '2px';
         this.els.particles.appendChild(p);
-
         const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * 800 + 400;
-        const tx = Math.cos(angle) * dist;
-        const ty = Math.sin(angle) * dist;
-
+        const dist = Math.random() * 1000 + 500;
         p.animate([
-            { transform: 'translate(-50%, -50%) rotate(0deg)', opacity: 1 },
-            { transform: `translate(${tx}px, ${ty}px) rotate(360deg)`, opacity: 0 }
-        ], {
-            duration: 1500,
-            easing: 'cubic-bezier(0, .9, .1, 1)'
-        }).onfinish = () => p.remove();
+            { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+            { transform: `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0)`, opacity: 0 }
+        ], { duration: 1500, easing: 'cubic-bezier(0, .9, .1, 1)' }).onfinish = () => p.remove();
     }
   }
 
@@ -234,17 +175,8 @@ class TrolleyAdventure {
   hideOverlay() {
     this.els.overlay.classList.add('hidden');
   }
-
-  finishGame(isSuccess) {
-    this.sounds.stopBGM();
-    this.state = isSuccess ? GameState.RESULT : GameState.GAMEOVER;
-    const title = isSuccess ? "LEGEND CLEAR!" : "GAME OVER";
-    const desc = isSuccess ? "究極の冒険を成し遂げた！" : "奈落の底に消えていった...";
-    this.showOverlay(title, desc);
-    this.els.startBtn.innerText = "RETRY";
-  }
 }
 
 window.addEventListener('load', () => {
-  new TrolleyAdventure();
+  new TrolleyAdventureDisplay();
 });

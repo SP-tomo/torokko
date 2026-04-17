@@ -3,8 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>トロッコアドベンチャー ENGINE</title>
-    <link rel="stylesheet" href="/style.css" />
+    <title>TROLLER DISPLAY (Audience)</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   </head>
   <body>
     <div id="app" class="game-container">
@@ -62,8 +64,7 @@
 
       <!-- システムHUD (現在何問目かなど) -->
       <div class="system-hud">
-        <div class="q-counter">STAGE: <span id="id-index-text"></span><span id="q-index">0</span></div>
-        <a href="/editor.html" class="editor-link">⚙ EDITOR</a>
+        <div class="q-counter">STAGE: <span id="q-index">0 / 10</span></div>
       </div>
     </div>
     <script type="module" src="/main.js"></script>
