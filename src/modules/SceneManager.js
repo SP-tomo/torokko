@@ -14,16 +14,23 @@ export class SceneManager {
   }
 
   async loadImages() {
-    const loader = (src) => new Promise((res) => {
+    console.log("Loading realistic assets...");
+    const loader = (src) => new Promise((res, rej) => {
       const img = new Image();
       img.src = src;
-      img.onload = () => res(img);
+      img.onload = () => { console.log("Loaded:", src); res(img); };
+      img.onerror = () => { console.error("Failed to load:", src); rej(); };
     });
 
-    this.images.cave = await loader('/assets/background/cave_bg.png');
-    this.images.jungle = await loader('/assets/background/jungle_bg.png');
-    this.images.temple = await loader('/assets/background/temple_bg.png');
-    this.isLoaded = true;
+    try {
+      this.images.cave = await loader('/assets/background/cave_bg.png');
+      this.images.jungle = await loader('/assets/background/jungle_bg.png');
+      this.images.temple = await loader('/assets/background/temple_bg.png');
+      this.isLoaded = true;
+    } catch (e) {
+      console.error("Image loading failed - falling back to procedural");
+      this.isLoaded = false;
+    }
   }
 
   resize() {

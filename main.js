@@ -211,7 +211,7 @@ class TrolleyAdventure {
   }
 
   updateHUD() {
-    this.els.qCounter.innerText = this.currentIndex + 1;
+    this.els.qCounter.innerText = `${this.currentIndex + 1} / ${this.questions.length}`;
   }
 
   showOverlay(title, desc) {
