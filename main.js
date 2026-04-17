@@ -22,6 +22,12 @@ class TrolleyAdventure {
     this.sounds = new SoundEngine();
     this.canvas = document.getElementById('bg-canvas');
     this.scene = new SceneManager(this.canvas);
+    
+    // Versioning / Forced Update
+    if (localStorage.getItem('trolley_version') !== '1.1') {
+      localStorage.removeItem('trolley_questions');
+      localStorage.setItem('trolley_version', '1.1');
+    }
 
     // Elements
     this.els = {
@@ -114,13 +120,20 @@ class TrolleyAdventure {
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.timerInterval = setInterval(() => {
       this.timer -= 0.05;
-      this.els.timerFill.style.transform = `scaleX(${this.timer / 5.0})`;
+      this.els.timerFill.style.transform = `scaleX(${Math.max(0, this.timer / 5.0)})`;
       if (this.timer < 1.0 && this.timer > 0) this.sounds.playTick();
       if (this.timer <= 0) {
-        clearInterval(this.timerInterval);
+        this.stopTimer();
         this.autoJudge();
       }
     }, 50);
+  }
+
+  stopTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
   }
 
   handleKeyDown(e) {
@@ -131,6 +144,8 @@ class TrolleyAdventure {
 
   selectChoice(side) {
     if (this.state !== GameState.QUESTION) return;
+    if (this.selectedChoice === side) return; // Ignore if already selected
+    
     this.selectedChoice = side;
     this.sounds.playTick();
     this.els.choiceLeft.classList.toggle('selected', side === 'left');
