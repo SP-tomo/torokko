@@ -15,10 +15,11 @@ export class SceneManager {
   }
 
   _loadImages() {
+    const base = import.meta.env.BASE_URL;
     const map = {
-      cave:   '/assets/background/洞窟.webp',
-      jungle: '/assets/background/ジャングル.webp',
-      sky:    '/assets/background/大空.webp',
+      cave:   `${base}assets/background/洞窟.webp`,
+      jungle: `${base}assets/background/ジャングル.webp`,
+      sky:    `${base}assets/background/大空.webp`,
     };
     for (const [key, src] of Object.entries(map)) {
       const img = new Image();

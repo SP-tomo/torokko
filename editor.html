@@ -93,7 +93,7 @@
 </head>
 <body>
   <header>
-    <a href="/" class="back">← ゲームに戻る</a>
+    <a href="./" class="back">← ゲームに戻る</a>
     <h1>🛒 TROLLEY ADVENTURE — EDITOR</h1>
     <button class="btn btn-gold" id="save-all-btn">💾 全チーム保存</button>
     <button class="btn btn-red"  id="reset-btn">↺ リセット</button>
@@ -173,7 +173,7 @@
     const local = localStorage.getItem('trolley_questions_v2');
     if (local) { data = JSON.parse(local); }
     else {
-      const resp = await fetch('/assets/data/questions.json');
+      const resp = await fetch('./assets/data/questions.json');
       data = await resp.json();
     }
     for (const t of TEAMS) {
