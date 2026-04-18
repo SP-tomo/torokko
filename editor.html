@@ -281,7 +281,7 @@
 </head>
 <body>
   <header>
-    <a href="/" class="back">← ゲームへ戻る</a>
+    <a href="./index.html" class="back">← ゲームへ戻る</a>
     <h1>🎮 トロッコアドベンチャー EDITOR</h1>
     <button class="btn btn-gold" id="save-all-btn">💾 全チーム保存</button>
     <button class="btn btn-red"  id="reset-btn">🔄 初期化</button>
@@ -334,7 +334,7 @@
       if (local) {
         data = JSON.parse(local);
       } else {
-        const resp = await fetch('/assets/data/questions.json');
+        const resp = await fetch('./assets/data/questions.json');
         data = await resp.json();
       }
       for (const t of TEAMS) {

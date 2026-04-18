@@ -96,7 +96,7 @@ class TrolleyAdventure {
     if (localData) {
       this.questionBank = JSON.parse(localData);
     } else {
-      const resp = await fetch('/assets/data/questions.json');
+      const resp = await fetch('./assets/data/questions.json');
       this.questionBank = await resp.json();
     }
 
