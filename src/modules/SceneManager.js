@@ -23,14 +23,22 @@ export class SceneManager {
   }
 
   async loadImages() {
-    const loader = (src) => new Promise((res, rej) => {
+    console.log("SceneManager: Loading images...");
+    const loader = (src) => new Promise((res) => {
       const img = new Image();
       img.src = src;
-      img.onload = () => res(img);
-      img.onerror = () => rej();
+      img.onload = () => {
+        console.log("SceneManager: Loaded", src);
+        res(img);
+      };
+      img.onerror = () => {
+        console.error("SceneManager: ERROR loading", src);
+        res(null); // Return null instead of rejecting to keep the loop going
+      };
     });
 
     try {
+      // Use absolute-looking paths which Vite serves from the public directory
       this.images.cave = await loader('/assets/background/cave_bg.png');
       this.images.jungle = await loader('/assets/background/jungle_bg.png');
       this.images.temple = await loader('/assets/background/temple_bg.png');
@@ -38,9 +46,11 @@ export class SceneManager {
       this.images.space = await loader('/assets/background/space_bg.png');
       this.images.underwater = await loader('/assets/background/underwater_bg.png');
       this.images.cloud = await loader('/assets/background/cloud_bg.png');
+      
       this.isLoaded = true;
+      console.log("SceneManager: All images attempted.");
     } catch (e) {
-      console.error("Image loading failed");
+      console.error("SceneManager: Critical loading error", e);
     }
   }
 
@@ -93,9 +103,7 @@ export class SceneManager {
       this.ctx.globalAlpha = 1.0;
     }
 
-    // New Broadcast FX from PR #1 (Vignette)
     this._drawVignette(w, h);
-
     this.updateParticles(w, h);
     this.drawParticles();
 
@@ -107,7 +115,7 @@ export class SceneManager {
   _drawVignette(w, h) {
     const v = this.ctx.createRadialGradient(w/2, h/2, h*0.2, w/2, h/2, w*0.8);
     v.addColorStop(0, 'rgba(0,0,0,0)');
-    v.addColorStop(1, 'rgba(0,0,0,0.6)');
+    v.addColorStop(1, 'rgba(0,0,0,0.7)');
     this.ctx.fillStyle = v;
     this.ctx.fillRect(0, 0, w, h);
   }
@@ -156,7 +164,7 @@ export class SceneManager {
   }
 
   drawSpeedLines(w, h) {
-    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
     this.ctx.lineWidth = 1;
     for (let i = 0; i < 30; i++) {
       const x = Math.random() * w;

@@ -14,9 +14,18 @@
       
       <!-- 放送演出レイヤー -->
       <div id="telop-stack" class="telop-stack"></div>
+      
+      <!-- 実況ナレーターパネル (Narrator.js対応) -->
       <div id="narrator-panel" class="narrator-panel hidden">
-        <div class="narrator-text"></div>
+        <div class="narrator-box">
+          <div class="narrator-face">🎤</div>
+          <div class="narrator-text-container">
+            <div class="narrator-text-clip"></div>
+            <div class="narrator-text"></div>
+          </div>
+        </div>
       </div>
+
       <div id="panelist-container" class="panelist-container"></div>
       
       <!-- メインゲーム画面 -->
