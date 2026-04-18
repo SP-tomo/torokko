@@ -48,3 +48,15 @@
     {"q": "元素記号「O」は何？",          "l": "酸素",      "r": "窒素",        "a": "left"}
   ]
 }
+[
+  { "id": 1, "theme": "cave", "question": "日本で一番高い山は？", "left": { "text": "富士山" }, "right": { "text": "北岳" }, "answer": "left" },
+  { "id": 2, "theme": "cave", "question": "信号の「進め」の色は？", "left": { "text": "緑" }, "right": { "text": "青" }, "answer": "right" },
+  { "id": 3, "theme": "jungle", "question": "1年は何日？", "left": { "text": "365日" }, "right": { "text": "366日" }, "answer": "left" },
+  { "id": 4, "theme": "jungle", "question": "オリンピックの発祥地は？", "left": { "text": "イタリア" }, "right": { "text": "ギリシャ" }, "answer": "right" },
+  { "id": 5, "theme": "ice", "question": "「パンダ」の主食は？", "left": { "text": "竹" }, "right": { "text": "笹" }, "answer": "left" },
+  { "id": 6, "theme": "underwater", "question": "水を表す化学式は？", "left": { "text": "H2O" }, "right": { "text": "CO2" }, "answer": "left" },
+  { "id": 7, "theme": "space", "question": "太陽系で一番大きい惑星は？", "left": { "text": "木星" }, "right": { "text": "土星" }, "answer": "left" },
+  { "id": 8, "theme": "cloud", "question": "モナ・リザを描いたのは？", "left": { "text": "ダ・ヴィンチ" }, "right": { "text": "ミケランジェロ" }, "answer": "left" },
+  { "id": 9, "theme": "cloud", "question": "世界で一番長い川は？", "left": { "text": "ナイル川" }, "right": { "text": "アマゾン川" }, "answer": "left" },
+  { "id": 10, "theme": "temple", "question": "最終問題：元素記号「Au」は何？", "left": { "text": "銀" }, "right": { "text": "金" }, "answer": "right" }
+]

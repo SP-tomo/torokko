@@ -5,6 +5,7 @@ import { Narrator } from './src/modules/Narrator.js';
 import { DirectorQueue } from './src/modules/DirectorQueue.js';
 import { TELOP_LINES } from './src/data/telop_lines.js';
 import { NARRATOR_LINES } from './src/data/narrator_lines.js';
+import { SyncManager } from './src/modules/SyncManager.js';
 
 const GameState = {
   TITLE: 'TITLE',
@@ -37,6 +38,7 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const fmt  = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
 
 class TrolleyAdventure {
+class TrolleyAdventureDisplay {
   constructor() {
     this.state = GameState.TITLE;
     this.questionBank = {};      // {A:[...], B:[...], C:[...], D:[...]}
@@ -44,7 +46,6 @@ class TrolleyAdventure {
     this.currentTeamIdx = 0;
     this.currentIndex = 0;
     this.timer = 5.0;
-    this.timerInterval = null;
     this.selectedChoice = null;
 
     // Load settings (timer, question count)
@@ -83,6 +84,27 @@ class TrolleyAdventure {
       teamBadge:     document.getElementById('team-badge'),
       scoreBoard:    document.getElementById('score-board'),
       pointDisplay:  document.getElementById('point-display'),
+    
+    this.sounds = new SoundEngine();
+    this.canvas = document.getElementById('bg-canvas');
+    this.scene = new SceneManager(this.canvas);
+    this.sync = new SyncManager(false);
+
+    this.els = {
+      app: document.getElementById('app'),
+      qText: document.getElementById('question-text'),
+      choiceLeft: document.getElementById('choice-left'),
+      choiceRight: document.getElementById('choice-right'),
+      textLeft: document.getElementById('text-left'),
+      textRight: document.getElementById('text-right'),
+      timerFill: document.getElementById('timer-fill'),
+      trolley: document.getElementById('trolley'),
+      overlay: document.getElementById('overlay-layer'),
+      overlayTitle: document.getElementById('overlay-title'),
+      overlayDesc: document.getElementById('overlay-desc'),
+      qCounter: document.getElementById('q-index'),
+      judgeOverlay: document.getElementById('judge-text-overlay'),
+      particles: document.getElementById('particles-container'),
     };
 
     this.telops   = new TelopSystem(this.els.telopStack);
@@ -223,7 +245,38 @@ class TrolleyAdventure {
       this.endTeamRun(true);
       return;
     }
+    const resp = await fetch('/assets/data/questions.json');
+    this.questions = await resp.json();
 
+    this.scene.update();
+    this.setupSync();
+    
+    // Auto-hide overlay after first sync or interaction
+    window.addEventListener('click', () => {
+        this.sounds.init();
+        this.hideOverlay();
+    }, { once: true });
+
+    this.showOverlay("TROLLEY ADVENTURE", "WAITING FOR CONTROLLER...");
+  }
+
+  setupSync() {
+    this.sync.listen((type, payload) => {
+      console.log("SYNC:", type, payload);
+      switch(type) {
+        case 'JUMP_TO': this.jumpTo(payload.index); break;
+        case 'START_TIMER': this.startTimer(); break;
+        case 'JUDGE': this.showJudgement(payload.result === 'correct'); break;
+        case 'RESET': window.location.reload(); break;
+      }
+    });
+
+    // Keyboard support for local testing
+    window.addEventListener('keydown', (e) => this.handleKeyDown(e));
+  }
+
+  jumpTo(index) {
+    this.currentIndex = index;
     this.state = GameState.QUESTION;
     this.selectedChoice = null;
     this.timer = this.timerDuration;
@@ -241,6 +294,17 @@ class TrolleyAdventure {
     this.els.textLeft.innerText  = q.l;
     this.els.textRight.innerText = q.r;
 
+    this.hideOverlay();
+    
+    const q = this.questions[index];
+    this.scene.setTheme(q.theme || 'cave');
+    this.scene.speed = 1.0;
+    this.scene.shake = 2;
+
+    this.els.qText.innerText = q.question;
+    this.els.textLeft.innerText = q.left.text;
+    this.els.textRight.innerText = q.right.text;
+    
     this.els.choiceLeft.classList.remove('selected');
     this.els.choiceRight.classList.remove('selected');
     this.els.trolley.className = 'trolley';
@@ -273,6 +337,10 @@ class TrolleyAdventure {
       this.els.teamBadge.style.background = team.color;
       this.els.teamBadge.style.color = this._isDark(team.color) ? '#fff' : '#111';
     }
+    this.els.app.classList.remove('running', 'correct-bg-flash', 'shake');
+    this.els.timerFill.style.transform = `scaleX(1)`;
+    
+    this.sounds.startBGM();
   }
 
   updatePointDisplay() {
@@ -320,6 +388,7 @@ class TrolleyAdventure {
         this.enterJudging();
       }
     }, 50);
+    this.state = GameState.QUESTION;
   }
 
   handleKeyDown(e) {
@@ -331,8 +400,10 @@ class TrolleyAdventure {
   selectChoice(side) {
     if (this.state !== GameState.QUESTION) return;
     const isNew = this.selectedChoice !== side;
+    if (this.selectedChoice === side) return;
+    
     this.selectedChoice = side;
-    this.sounds.playTick();
+    this.sounds.playSelect();
     this.els.choiceLeft.classList.toggle('selected', side === 'left');
     this.els.choiceRight.classList.toggle('selected', side === 'right');
     this.els.trolley.className = `trolley tilt-${side}`;
@@ -432,6 +503,43 @@ class TrolleyAdventure {
       this.playStageIntermission(currStage + 1);
     } else {
       this.nextQuestion();
+  showJudgement(isCorrect) {
+    this.state = GameState.JUDGING;
+    this.els.app.classList.add('running');
+    this.scene.speed = 5.0;
+    this.scene.shake = 15;
+    
+    setTimeout(() => {
+      if (isCorrect) {
+        this.sounds.playCorrect();
+        this.els.app.classList.add('correct-bg-flash');
+        this.els.judgeOverlay.innerText = "正解";
+        this.els.judgeOverlay.className = "active text-correct";
+        this.createParticles('#ffd700');
+      } else {
+        this.sounds.playIncorrect();
+        this.els.app.classList.add('shake');
+        this.els.judgeOverlay.innerText = "不正解";
+        this.els.judgeOverlay.className = "active text-incorrect";
+        this.els.trolley.classList.add('fall');
+        this.scene.speed = 0;
+        this.scene.shake = 0;
+      }
+    }, 1500);
+  }
+
+  createParticles(color) {
+    for (let i = 0; i < 100; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle-spark';
+        p.style.background = color;
+        this.els.particles.appendChild(p);
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 1000 + 500;
+        p.animate([
+            { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+            { transform: `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0)`, opacity: 0 }
+        ], { duration: 1500, easing: 'cubic-bezier(0, .9, .1, 1)' }).onfinish = () => p.remove();
     }
   }
 
@@ -484,3 +592,6 @@ class TrolleyAdventure {
 }
 
 window.addEventListener('load', () => new TrolleyAdventure());
+window.addEventListener('load', () => {
+  new TrolleyAdventureDisplay();
+});
