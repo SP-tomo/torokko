@@ -256,9 +256,9 @@ class TrolleyAdventure {
     this.els.timerFill.style.transform = 'scaleX(1)';
 
     const qNum = this.currentIndex + 1;
-    this.sounds.playQuestionChime();
-    this.telops.pushData(TELOP_LINES.questionStart(qNum));
-    this.narrator.say(fmt(pick(NARRATOR_LINES.questionStart), { n: qNum }), { speedMs: 40 });
+    try { this.sounds.playQuestionChime(); } catch(e) { console.warn('chime error', e); }
+    try { this.telops.pushData(TELOP_LINES.questionStart(qNum)); } catch(e) {}
+    try { this.narrator.say(fmt(pick(NARRATOR_LINES.questionStart), { n: qNum }), { speedMs: 40 }); } catch(e) {}
 
     this.startTimer();
   }
