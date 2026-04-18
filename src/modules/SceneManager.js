@@ -321,12 +321,12 @@ export class SceneManager {
       const wx = o.side * (this.WORLD_W + o.wallOff);
       const p  = this._project(wx, o.wallY, o.z);
       if (!p) continue;
-      // Fade based on depth
-      const alpha = Math.min(1, Math.max(0, (1800 - o.z) / 1400));
-      if (alpha <= 0) continue;
+      // Fade in gradually — start fading in at z=2500, fully visible by z=1000
+      const alpha = Math.min(1, Math.max(0, (2500 - o.z) / 1500));
+      if (alpha <= 0.02) continue;
       ctx.save();
       ctx.globalAlpha = alpha;
-      this._drawObject(ctx, o, p, t);
+      try { this._drawObject(ctx, o, p, t); } catch(e) { /* ignore single object error */ }
       ctx.restore();
     }
   }
@@ -490,8 +490,19 @@ export class SceneManager {
     g.addColorStop(0.8,'#3d1f08');
     g.addColorStop(1,  '#1a0a04');
     ctx.fillStyle = g;
+    // Use compatible path instead of roundRect
+    const r = Math.min(6*s, tw*0.3);
     ctx.beginPath();
-    ctx.roundRect(-tw/2, -th, tw, th, 6*s);
+    ctx.moveTo(-tw/2 + r, -th);
+    ctx.lineTo(tw/2 - r, -th);
+    ctx.arcTo(tw/2, -th, tw/2, -th + r, r);
+    ctx.lineTo(tw/2, -r);
+    ctx.arcTo(tw/2, 0, tw/2 - r, 0, r);
+    ctx.lineTo(-tw/2 + r, 0);
+    ctx.arcTo(-tw/2, 0, -tw/2, -r, r);
+    ctx.lineTo(-tw/2, -th + r);
+    ctx.arcTo(-tw/2, -th, -tw/2 + r, -th, r);
+    ctx.closePath();
     ctx.fill();
     // Bark lines
     ctx.strokeStyle = 'rgba(10,5,2,0.5)';

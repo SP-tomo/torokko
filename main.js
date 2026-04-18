@@ -26,12 +26,22 @@ const TEAMS = [
   { id: 'D', name: 'チームD', color: '#ffd43b', key: 'D' },
 ];
 
-// Divide questions evenly across 3 stages
-const stageOf    = (i, total) => i < Math.ceil(total / 3) ? 0 : i < Math.ceil(total * 2 / 3) ? 1 : 2;
-const THEMES     = ['cave', 'jungle', 'cloud'];
-const STAGENAMES = ['洞窟ゾーン', 'ジャングルゾーン', '大空ゾーン'];
-const STAGE_THEME = (i, total) => THEMES[stageOf(i, total)];
-const STAGE_NAME  = (i, total) => STAGENAMES[stageOf(i, total)];
+// 7 available themes — randomly shuffled into 5 stages each game
+const ALL_THEMES = [
+  { id: 'cave',       name: '洞窟ゾーン' },
+  { id: 'jungle',     name: 'ジャングルゾーン' },
+  { id: 'temple',     name: '神殿ゾーン' },
+  { id: 'ice',        name: '氷河ゾーン' },
+  { id: 'underwater', name: '海底ゾーン' },
+  { id: 'space',      name: '宇宙ゾーン' },
+  { id: 'cloud',      name: '雲海ゾーン' },
+];
+const N_STAGES = 5;
+
+function generateStageThemes() {
+  // Shuffle all themes and take the first N_STAGES
+  return [...ALL_THEMES].sort(() => Math.random() - 0.5).slice(0, N_STAGES);
+}
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const fmt  = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
@@ -57,6 +67,7 @@ class TrolleyAdventure {
     this.canvas   = document.getElementById('bg-canvas');
     this.scene    = new SceneManager(this.canvas);
     this.director = new DirectorQueue();
+    this.stageThemes = generateStageThemes(); // regenerated each game
 
     this.els = {
       app:           document.getElementById('app'),
@@ -117,6 +128,7 @@ class TrolleyAdventure {
   // ── TEAM FLOW ────────────────────────────────────────────────────
   startAllTeams() {
     this.currentTeamIdx = 0;
+    this.stageThemes = generateStageThemes(); // new random order each game
     this.sounds.init();
     this.sounds.ensureRunning();
     this.hideOverlay();
@@ -142,8 +154,10 @@ class TrolleyAdventure {
     if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
     this.sounds.stopBGM();
 
-    this.els.stageCardNum.textContent = team.name;
-    this.els.stageCardName.textContent = 'の挑戦！';
+    // Show stage intro card
+    const stageIdx = this._stageOf(0);
+    this.els.stageCardNum.textContent = this.stageThemes[stageIdx]?.name ?? 'STAGE 1';
+    this.els.stageCardName.textContent = `${team.name} の挑戦！`;
     this.els.stageCard.classList.remove('hidden');
     const card = this.els.stageCard;
     card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
@@ -234,11 +248,25 @@ class TrolleyAdventure {
     this.updateHUD();
     this.updatePointDisplay();
 
-    const theme = STAGE_THEME(this.currentIndex, this.questionCount);
+    const stageIdx = this._stageOf(this.currentIndex);
+    const theme     = this.stageThemes[stageIdx]?.id ?? 'cave';
     this.scene.setTheme(theme);
     this.scene.speed = 1.0;
     this.scene.shake = 2;
     this.sounds.setVolume(0.5);
+
+    // Show stage transition card when stage changes
+    if (this.currentIndex > 0) {
+      const prevStage = this._stageOf(this.currentIndex - 1);
+      if (prevStage !== stageIdx) {
+        this.els.stageCardNum.textContent  = this.stageThemes[stageIdx]?.name ?? `STAGE ${stageIdx+1}`;
+        this.els.stageCardName.textContent = `ステージ ${stageIdx+1}`;
+        this.els.stageCard.classList.remove('hidden');
+        const card = this.els.stageCard;
+        card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
+        setTimeout(() => this.els.stageCard.classList.add('hidden'), 2200);
+      }
+    }
 
     const q = this._currentQuestion();
     this.els.qText.innerText = q.q;
@@ -261,6 +289,11 @@ class TrolleyAdventure {
     try { this.narrator.say(fmt(pick(NARRATOR_LINES.questionStart), { n: qNum }), { speedMs: 40 }); } catch(e) {}
 
     this.startTimer();
+  }
+
+  /** Return which stage (0-based) a question index belongs to */
+  _stageOf(i) {
+    return Math.min(N_STAGES - 1, Math.floor(i / (this.questionCount / N_STAGES)));
   }
 
   _currentQuestion() {
