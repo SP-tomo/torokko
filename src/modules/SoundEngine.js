@@ -21,14 +21,13 @@ export class SoundEngine {
   }
 
   ensureRunning() {
+    this.init();
     if (this.ctx.state === 'suspended') {
       this.ctx.resume().catch(() => {});
     }
   }
 
   // --- BGM System ---
-  startBGM() {
-    this.ensureRunning();
   startBGM() {
     this.init();
     if (this.bgmInterval) return;
@@ -43,10 +42,9 @@ export class SoundEngine {
 
   playBeat() {
     const time = this.ctx.currentTime;
-    // Nep League Rhythmic Bass/Kick
     this.kick(time);
     if (this.beatCount % 2 === 1) {
-      this.bass(time, 40 * this.tension); 
+      this.bass(time, 40 * this.tension);
     }
     if (this.beatCount % 4 === 2) {
       this.snare(time);
@@ -104,7 +102,6 @@ export class SoundEngine {
 
   playSelect() {
     if (!this.ctx) return;
-    // Deep "Don!"
     this.sweep(150, 40, 0.4);
   }
 
@@ -167,7 +164,7 @@ export class SoundEngine {
 
   playDramaticSting() {
     const t = this.ctx.currentTime;
-    const freqs = [220, 261.63, 329.63]; // A3 C4 E4
+    const freqs = [220, 261.63, 329.63];
     freqs.forEach((base) => {
       [-4, 0, 4].forEach((detune) => {
         const osc = this.ctx.createOscillator();
@@ -184,7 +181,6 @@ export class SoundEngine {
         osc.stop(t + 0.55);
       });
     });
-    // Transient noise burst for the "ジャン！" attack
     const bufferSize = this.ctx.sampleRate * 0.08;
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -209,7 +205,6 @@ export class SoundEngine {
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
-      // bursty noise to simulate claps
       const clap = Math.random() < 0.25 ? (Math.random() * 2 - 1) : (Math.random() * 2 - 1) * 0.4;
       data[i] = clap;
     }
@@ -227,7 +222,6 @@ export class SoundEngine {
     gain.gain.linearRampToValueAtTime(0.25, t + duration - 0.3);
     gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
 
-    // 8Hz LFO for swelling amplitude
     const lfo = this.ctx.createOscillator();
     lfo.frequency.value = 8;
     const lfoGain = this.ctx.createGain();
@@ -273,7 +267,7 @@ export class SoundEngine {
 
   playStageFanfare() {
     const t = this.ctx.currentTime;
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C E G C
+    const notes = [523.25, 659.25, 783.99, 1046.50];
     notes.forEach((f, i) => {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
@@ -288,7 +282,6 @@ export class SoundEngine {
       osc.start(start);
       osc.stop(start + 0.55);
     });
-    // Timpani-ish kick roll
     for (let i = 0; i < 6; i++) {
       const start = t + i * 0.06;
       const osc = this.ctx.createOscillator();

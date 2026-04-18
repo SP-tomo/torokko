@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Shippori+Mincho:wght@900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Shippori+Mincho:wght@400;700;900&display=swap');
 
 :root {
   --gold: #ffd700;
@@ -80,34 +80,34 @@ body, html {
   z-index: 10;
   display: flex;
   flex-direction: column;
-  padding: 40px;
+  padding: 115px 36px 210px;
+  gap: 16px;
 }
 
 .question-box {
   background: var(--panel-bg);
   color: #fff;
-  padding: 30px;
+  padding: 28px 36px;
   border-radius: 4px;
-  border: 4px solid #444;
+  border: 4px solid #555;
   box-shadow: inset 0 0 20px rgba(0,0,0,1), 0 10px 30px rgba(0,0,0,0.8);
-  margin-bottom: 20px;
-  width: 90%;
-  max-width: 1200px;
-  min-height: 120px;
+  width: 100%;
+  min-height: 130px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
+  font-size: 4.5rem;
+  font-weight: 700;
   font-family: var(--font-serif);
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+  line-height: 1.2;
+  text-align: center;
 }
 
 .choices-container {
   display: flex;
-  width: 95%;
-  max-width: 1400px;
-  gap: 40px;
-  justify-content: center;
+  width: 100%;
+  gap: 20px;
 }
 
 .choice {
@@ -146,26 +146,46 @@ body, html {
 .choice-left.selected { background: #0000ff; border-color: #00d4ff; }
 .choice-right.selected { background: #ff0000; border-color: #ff4d4d; }
 
-.choice-panel:hover {
-  transform: scale(1.02);
-  background: rgba(255,255,255,0.1);
+.choice-panel {
+  flex: 1;
+  min-height: 130px;
+  border: 5px solid #555;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+  position: relative;
 }
+.choice-panel.left  { border-color: #2244cc; background: linear-gradient(160deg, rgba(0,0,50,0.88), rgba(0,0,30,0.95)); }
+.choice-panel.right { border-color: #cc2222; background: linear-gradient(160deg, rgba(50,0,0,0.88), rgba(30,0,0,0.95)); }
+.choice-panel:hover { transform: scale(1.03); filter: brightness(1.2); }
+.choice-panel.selected.left  { background: rgba(0,20,200,0.7); border-color: #00d4ff; box-shadow: 0 0 40px rgba(0,120,255,0.6); transform: scale(1.04); }
+.choice-panel.selected.right { background: rgba(200,0,0,0.7); border-color: #ff6666; box-shadow: 0 0 40px rgba(255,0,0,0.6); transform: scale(1.04); }
 
-.choice-panel.selected {
-  background: rgba(255,255,255,0.2);
-  box-shadow: 0 0 50px rgba(255,255,255,0.3);
+.choice-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
 }
 
 .choice-label {
   position: absolute;
   top: 10px;
-  font-size: 0.8rem;
-  opacity: 0.6;
+  font-size: 0.75rem;
+  opacity: 0.5;
+  letter-spacing: 0.1em;
 }
 
 .choice-text {
-  font-size: 3rem;
-  font-weight: 900;
+  font-size: 3.5rem;
+  font-weight: 700;
+  font-family: var(--font-serif);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
 }
 
 .timer-bar {
@@ -186,67 +206,58 @@ body, html {
 /* Trolley Layer */
 .trolley-layer {
   position: absolute;
-  bottom: 0px;
+  bottom: 0;
   width: 100%;
-  height: 40%;
+  height: 35%;
   z-index: 5;
   display: flex;
   justify-content: center;
+  align-items: flex-end;
   pointer-events: none;
 }
 
 .trolley {
-  width: 600px;
-  height: 480px;
-  background: url("/assets/trolley/trolley.png") center bottom no-repeat;
-  background-size: contain;
-  /* Placeholder if image missing: Draw a simple isometric minecart */
-  background-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
+  width: 440px;
+  height: 190px;
+  background: linear-gradient(to bottom, #3d3d3d 0%, #222 55%, #111 100%);
+  border: 5px solid #666;
+  border-bottom: 8px solid #888;
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.8), inset 0 2px 8px rgba(255,255,255,0.06);
   transform-origin: bottom center;
-  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  width: 100vw;
-  height: 250px;
-  background: linear-gradient(to top, #111, #333);
-  border-top: 10px solid #555;
-  box-shadow: 0 -20px 50px rgba(0,0,0,0.8);
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  z-index: 50;
-  pointer-events: none;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+  position: relative;
+}
+
+.trolley::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 24px;
+  right: 24px;
+  height: 82px;
+  background: #111;
+  border: 3px solid #444;
+  border-radius: 5px;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.9);
 }
 
 .trolley::after {
   content: '';
-  width: 80%;
-  height: 40px;
-  background: #222;
-  border: 4px solid #444;
-  border-radius: 20px;
-  margin-top: 20px;
-  box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 86%;
+  height: 8px;
+  background: #777;
+  border-radius: 3px;
+  box-shadow: -150px 0 0 8px #555, 150px 0 0 8px #555;
 }
 
-.trolley.tilt-left { transform: rotate(-2deg) translateY(10px) translateX(-20px); }
-.trolley.tilt-right { transform: rotate(2deg) translateY(10px) translateX(20px); }
-
-@keyframes trolleyBob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(5px); }
-}
-
-.trolley.tilt-left { transform: rotate(-12deg) translateX(-150px) translateY(-50px) scale(0.95); }
-.trolley.tilt-right { transform: rotate(12deg) translateX(150px) translateY(-50px) scale(0.95); }
-/* .trolley.fall is now handled by @keyframes trolleyFall below */
-.trolley.fall { transform: translateY(1500px) rotate(90deg) scale(0.5); transition: transform 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19); }
+.trolley.tilt-left  { transform: rotate(-12deg) translateX(-80px) translateY(-20px) scale(0.95); }
+.trolley.tilt-right { transform: rotate(12deg) translateX(80px) translateY(-20px) scale(0.95); }
 
 @keyframes slideInDown {
   from { transform: translateY(-100%); opacity: 0; }

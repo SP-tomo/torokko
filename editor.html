@@ -98,25 +98,7 @@
     <button class="btn btn-gold" id="save-all-btn">💾 全チーム保存</button>
     <button class="btn btn-red"  id="reset-btn">↺ リセット</button>
   </header>
-    <div class="editor-container">
-        <a href="/" class="back-link">← GAME BACK</a>
-        <h1>ENGINE EDITOR</h1>
-        
-        <div class="card">
-            <h2>Global Settings</h2>
-            <label>Current Theme</label>
-            <select id="theme-select">
-                <option value="cave">Cave (洞窟)</option>
-                <option value="jungle">Jungle (ジャングル)</option>
-                <option value="ice">Ice (氷の世界)</option>
-                <option value="space">Space (宇宙ステーション)</option>
-                <option value="underwater">Underwater (海底)</option>
-                <option value="cloud">Cloud (雲上都市)</option>
-                <option value="temple">Temple (溶岩神殿)</option>
-            </select>
-        </div>
-
-  <main>
+    <main>
     <!-- ゲーム設定 -->
     <div style="background:var(--card);border-radius:12px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
       <h2 style="color:var(--gold);font-size:1.1rem;white-space:nowrap;">⚙️ ゲーム設定</h2>
@@ -129,6 +111,15 @@
         問題数（チームごと）：
         <input type="number" id="q-count" min="3" max="30" step="1" value="10"
           style="width:70px;padding:8px;background:#0a0a1a;border:1px solid #444;border-radius:6px;color:#fff;font-size:1rem;text-align:center;">
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;font-size:1rem;">
+        タイトル背景：
+        <select id="title-theme"
+          style="padding:8px;background:#0a0a1a;border:1px solid #444;border-radius:6px;color:#fff;font-size:1rem;">
+          <option value="cave">洞窟</option>
+          <option value="jungle">ジャングル</option>
+          <option value="sky">大空</option>
+        </select>
       </label>
       <button class="btn btn-gold" id="save-settings-btn">設定を保存</button>
     </div>
@@ -153,15 +144,16 @@
   function loadSettings() {
     const s = localStorage.getItem('trolley_settings_v2');
     const settings = s ? JSON.parse(s) : {};
-    document.getElementById('timer-sec').value    = settings.timerSec      ?? 5;
-    document.getElementById('q-count').value      = settings.questionCount ?? 10;
+    document.getElementById('timer-sec').value  = settings.timerSec      ?? 5;
+    document.getElementById('q-count').value    = settings.questionCount ?? 10;
+    document.getElementById('title-theme').value = settings.titleTheme  ?? 'cave';
     Q_COUNT = settings.questionCount ?? 10;
   }
   document.getElementById('save-settings-btn').onclick = () => {
     const timerSec      = parseInt(document.getElementById('timer-sec').value) || 5;
     const questionCount = parseInt(document.getElementById('q-count').value)   || 10;
-    localStorage.setItem('trolley_settings_v2', JSON.stringify({ timerSec, questionCount }));
-    // Rebuild UI if Q_COUNT changed
+    const titleTheme    = document.getElementById('title-theme').value || 'cave';
+    localStorage.setItem('trolley_settings_v2', JSON.stringify({ timerSec, questionCount, titleTheme }));
     if (Q_COUNT !== questionCount) {
       Q_COUNT = questionCount;
       for (const t of TEAMS) {
@@ -170,7 +162,7 @@
       }
       buildUI();
     }
-    showToast(`制限時間 ${timerSec}秒 / ${questionCount}問 で保存しました`);
+    showToast(`制限時間 ${timerSec}秒 / ${questionCount}問 / 背景:${titleTheme} で保存しました`);
   };
 
   async function loadData() {

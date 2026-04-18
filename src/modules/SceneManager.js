@@ -6,56 +6,30 @@ export class SceneManager {
     this.speed = 1.0;
     this.shake = 0;
     this.t = 0;
-    this.images = {};      // loaded real images keyed by theme
-    this.imgOffset = {};   // per-theme scroll offset
-    this.shake = 2;
     this.images = {};
-    this.isLoaded = false;
-    this.frame = 0;
-    this.particles = [];
-    
-    // Infinite Tunnel Layers
-    this.layers = [
-        { z: 0 },
-        { z: 666 },
-        { z: 1333 }
-    ];
+    this.imgOffset = {};
 
-    this.loadImages();
+    this._loadImages();
     this.resize();
     window.addEventListener('resize', () => this.resize());
-    this._loadImages();
   }
 
   _loadImages() {
-    const map = { cave: '/assets/background/洞窟.webp', jungle: '/assets/background/ジャングル.webp', sky: '/assets/background/大空.webp' };
+    const map = {
+      cave:   '/assets/background/洞窟.webp',
+      jungle: '/assets/background/ジャングル.webp',
+      sky:    '/assets/background/大空.webp',
+    };
     for (const [key, src] of Object.entries(map)) {
-  async loadImages() {
-    const loader = (src) => new Promise((res, rej) => {
       const img = new Image();
       img.onload  = () => { this.images[key] = img; this.imgOffset[key] = 0; };
-      img.onerror = () => {};   // silently fall back to procedural
+      img.onerror = () => {};
       img.src = src;
-      img.onload = () => res(img);
-      img.onerror = () => rej();
-    });
-
-    try {
-      this.images.cave = await loader('/assets/background/cave_bg.png');
-      this.images.jungle = await loader('/assets/background/jungle_bg.png');
-      this.images.temple = await loader('/assets/background/temple_bg.png');
-      this.images.ice = await loader('/assets/background/ice_bg.png');
-      this.images.space = await loader('/assets/background/space_bg.png');
-      this.images.underwater = await loader('/assets/background/underwater_bg.png');
-      this.images.cloud = await loader('/assets/background/cloud_bg.png');
-      this.isLoaded = true;
-    } catch (e) {
-      console.error("Image loading failed");
     }
   }
 
   resize() {
-    this.canvas.width = window.innerWidth;
+    this.canvas.width  = window.innerWidth;
     this.canvas.height = window.innerHeight;
   }
 
@@ -65,12 +39,6 @@ export class SceneManager {
 
   update() {
     this.t += 0.016;
-    this.frame++;
-    // Move layers
-    this.layers.forEach(l => {
-        l.z -= 10 * this.speed;
-        if (l.z <= 0) l.z = 2000;
-    });
     this.draw();
     requestAnimationFrame(() => this.update());
   }
@@ -84,7 +52,6 @@ export class SceneManager {
     this.ctx.save();
     this.ctx.translate(jx, jy);
 
-    // If a real image exists for this theme, use parallax scroll; else procedural
     if (this.images[this.theme]) {
       this._drawRealBg(w, h);
     } else {
@@ -104,71 +71,29 @@ export class SceneManager {
     const img = this.images[this.theme];
     const ctx = this.ctx;
 
-    // Scroll the image horizontally
     const scrollSpeed = 40 * this.speed;
     this.imgOffset[this.theme] = ((this.imgOffset[this.theme] || 0) + scrollSpeed * 0.016) % img.width;
 
-    // Scale to cover canvas height, then tile horizontally
     const scale = Math.max(w / img.width, h / img.height) * 1.05;
     const iw = img.width  * scale;
     const ih = img.height * scale;
     const iy = (h - ih) / 2;
-
     const offset = this.imgOffset[this.theme] * scale;
 
-    // Draw up to 3 tiles to cover the canvas during scroll
     for (let x = -offset; x < w + iw; x += iw) {
       ctx.drawImage(img, x, iy, iw, ih);
     }
-
-    // Shake-speed zoom
-    if (!this.isLoaded) return;
-    const w = this.canvas.width;
-    const h = this.canvas.height;
-    
-    this.ctx.fillStyle = '#000';
-    this.ctx.fillRect(0, 0, w, h);
-
-    const jitterX = (Math.random() - 0.5) * this.shake * this.speed;
-    const jitterY = (Math.random() - 0.5) * this.shake * this.speed;
-
-    const img = this.images[this.theme];
-    if (img) {
-      // Draw layers from far to near
-      const sortedLayers = [...this.layers].sort((a, b) => b.z - a.z);
-      
-      sortedLayers.forEach(l => {
-        const scale = 2000 / (l.z || 1);
-        const baseScale = Math.max(w / img.width, h / img.height);
-        const finalScale = baseScale * scale * 0.5;
-        
-        const iw = img.width * finalScale;
-        const ih = img.height * finalScale;
-        const ix = (w - iw) / 2 + jitterX;
-        const iy = (h - ih) / 2 + jitterY;
-        
-        // Alpha based on depth
-        this.ctx.globalAlpha = Math.min(1.0, (2000 - l.z) / 500);
-        this.ctx.drawImage(img, ix, iy, iw, ih);
-      });
-      this.ctx.globalAlpha = 1.0;
-    }
-
-    this.updateParticles(w, h);
-    this.drawParticles();
 
     if (this.speed > 1) {
       const extra = (this.speed - 1) * 0.03;
       ctx.drawImage(img, -offset * (1 + extra), iy - h * extra * 0.5, iw * (1 + extra * 2), ih * (1 + extra));
     }
 
-    // Dark vignette overlay for atmosphere
     this._drawVignette(w, h, 'rgba(0,0,0,0.35)');
-    // Speed lines on top
     if (this.speed > 2) this._drawSpeedLines(w, h);
   }
 
-  // ── CAVE ──────────────────────────────────────────────────────────
+  // ── CAVE ──────────────────────────────────────────────────────────────
   _drawCave(w, h) {
     const ctx = this.ctx, t = this.t;
     const bg = ctx.createRadialGradient(w * 0.5, h * 0.3, 0, w * 0.5, h * 0.5, w * 0.8);
@@ -248,7 +173,7 @@ export class SceneManager {
     }
   }
 
-  // ── JUNGLE ────────────────────────────────────────────────────────
+  // ── JUNGLE ────────────────────────────────────────────────────────────
   _drawJungle(w, h) {
     const ctx = this.ctx, t = this.t;
     const sky = ctx.createLinearGradient(0, 0, 0, h * 0.5);
@@ -340,7 +265,7 @@ export class SceneManager {
     }
   }
 
-  // ── SKY ───────────────────────────────────────────────────────────
+  // ── SKY ───────────────────────────────────────────────────────────────
   _drawSky(w, h) {
     const ctx = this.ctx, t = this.t;
     const sky = ctx.createLinearGradient(0, 0, 0, h);
@@ -394,59 +319,6 @@ export class SceneManager {
         ctx.lineTo(x, h * 0.72 - (Math.sin(x * 0.008 * m.s + m.s) + 1) * h * 0.18 * m.s);
       }
       ctx.lineTo(w, h * 0.72); ctx.closePath(); ctx.fill();
-  updateParticles(w, h) {
-    if (this.particles.length < 100) {
-      this.particles.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        z: Math.random() * 2000,
-        s: Math.random() * 2 + 1,
-        color: this.getParticleColor()
-      });
-    }
-    this.particles.forEach(p => {
-      p.z -= 15 * this.speed;
-      if (p.z <= 0) {
-        p.z = 2000;
-        p.x = Math.random() * w;
-        p.y = Math.random() * h;
-      }
-    });
-  }
-
-  getParticleColor() {
-    switch(this.theme) {
-      case 'ice': return 'rgba(200, 230, 255, 0.8)';
-      case 'underwater': return 'rgba(255, 255, 255, 0.5)';
-      case 'temple': return 'rgba(255, 100, 0, 0.8)';
-      case 'space': return 'rgba(255, 255, 255, 0.9)';
-      default: return 'rgba(255, 255, 255, 0.2)';
-    }
-  }
-
-  drawParticles() {
-    const w = this.canvas.width;
-    const h = this.canvas.height;
-    this.particles.forEach(p => {
-      const scale = 1000 / p.z;
-      const x = (p.x - w/2) * scale + w/2;
-      const y = (p.y - h/2) * scale + h/2;
-      const size = p.s * scale;
-      this.ctx.fillStyle = p.color;
-      this.ctx.fillRect(x, y, size, size);
-    });
-  }
-
-  drawSpeedLines(w, h) {
-    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    this.ctx.lineWidth = 1;
-    for (let i = 0; i < 30; i++) {
-      const x = Math.random() * w;
-      const y = Math.random() * h;
-      this.ctx.beginPath();
-      this.ctx.moveTo(x, y);
-      this.ctx.lineTo(x + (x - w/2) * 0.3 * this.speed, y + (y - h/2) * 0.3 * this.speed);
-      this.ctx.stroke();
     }
     const g = ctx.createLinearGradient(0, h * 0.68, 0, h);
     g.addColorStop(0, '#c87030'); g.addColorStop(1, '#6a3010');
@@ -466,7 +338,7 @@ export class SceneManager {
     }
   }
 
-  // ── SHARED ────────────────────────────────────────────────────────
+  // ── SHARED ────────────────────────────────────────────────────────────
   _drawRails(w, h) {
     const ctx = this.ctx, t = this.t;
     const railY = h * 0.72;
