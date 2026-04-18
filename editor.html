@@ -3,13 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <title>トロッコアドベンチャー EDITOR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
   <style>
-    :root { --gold: #ffd700; --bg: #1a1a2e; --card: #16213e; --border: #0f3460; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #eee; min-height: 100vh; }
+    :root {
+      --gold: #ffd700;
+      --gold-dark: #b8860b;
+      --bg: #0d0d1a;
+      --card: #12122a;
+      --border: #1e1e4a;
+      --team-a: #ff6b6b;
+      --team-b: #4dabf7;
+      --team-c: #51cf66;
+      --team-d: #ffd43b;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: #eee;
+      min-height: 100vh;
+    }
 
     header {
-      background: #0f3460;
+      background: linear-gradient(135deg, #0f0f2e, #1a1a40);
       padding: 14px 30px;
       display: flex;
       align-items: center;
@@ -17,343 +34,531 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+      border-bottom: 2px solid rgba(255,215,0,0.3);
     }
-    header h1 { font-size: 1.3rem; color: var(--gold); flex: 1; }
-    .btn { padding: 10px 24px; font-size: 1rem; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; transition: transform 0.15s; }
-    .btn:hover { transform: scale(1.04); }
-    .btn-gold { background: var(--gold); color: #000; }
-    .btn-red  { background: #e03030; color: #fff; }
-    .btn-gray { background: #444; color: #fff; }
-    .back { color: var(--gold); text-decoration: none; font-weight: 700; font-size: 1.1rem; }
+    header h1 {
+      font-family: 'Dela Gothic One', cursive;
+      font-size: 1.3rem;
+      color: var(--gold);
+      flex: 1;
+      letter-spacing: 0.1em;
+    }
+    .btn {
+      padding: 10px 24px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.05em;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    .btn:active { transform: translateY(0); }
+    .btn-gold  { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; }
+    .btn-red   { background: #c03030; color: #fff; }
+    .btn-gray  { background: #2a2a4a; color: #ccc; border: 1px solid #3a3a6a; }
+    .back {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+    }
+    .back:hover { text-decoration: underline; }
 
-    main { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+    main { max-width: 1140px; margin: 0 auto; padding: 28px 20px 80px; }
 
-    .tabs { display: flex; gap: 0; }
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 4px; margin-bottom: 0; }
     .tab-btn {
-      padding: 10px 28px; font-size: 1rem; font-weight: 700; border: none; cursor: pointer;
-      border-radius: 10px 10px 0 0; background: #222; color: #888;
-      border-bottom: 3px solid transparent; transition: all 0.2s;
+      padding: 10px 32px;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      border-radius: 10px 10px 0 0;
+      background: #1a1a30;
+      color: #666;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      font-family: 'Dela Gothic One', cursive;
+      letter-spacing: 0.05em;
     }
     .tab-btn.active { background: var(--card); color: #fff; border-bottom: 3px solid var(--gold); }
-    .tab-btn:hover:not(.active) { background: #2a2a2a; color: #ccc; }
+    .tab-btn:hover:not(.active) { background: #202040; color: #aaa; }
 
-    .tab-panel { display: none; background: var(--card); border-radius: 0 12px 12px 12px; padding: 24px; }
+    .tab-panel {
+      display: none;
+      background: var(--card);
+      border-radius: 0 12px 12px 12px;
+      padding: 28px;
+      border: 1px solid var(--border);
+    }
     .tab-panel.active { display: block; }
 
-    .q-list { display: flex; flex-direction: column; gap: 12px; }
-    .q-row {
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px;
-      padding: 14px 16px; display: grid;
-      grid-template-columns: 2rem 1fr 1fr 1fr auto; gap: 10px; align-items: center;
+    /* ── Panel Header ── */
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
     }
-    .q-num { font-size: 1.1rem; font-weight: 900; color: var(--gold); text-align: center; }
-    input[type="text"] {
-      width: 100%; padding: 8px 12px; background: #0a0a1a; border: 1px solid #333;
-      border-radius: 6px; color: #eee; font-size: 0.95rem; outline: none; transition: border-color 0.2s;
-    }
-    input[type="text"]:focus { border-color: var(--gold); }
+    .panel-header h2 { font-family: 'Dela Gothic One', cursive; font-size: 1.3rem; }
+    .panel-actions { margin-left: auto; display: flex; gap: 8px; }
+
+    /* ── Question List ── */
     .q-headers {
-      display: grid; grid-template-columns: 2rem 1fr 1fr 1fr auto;
-      gap: 10px; padding: 0 16px 8px; font-size: 0.8rem; color: #888; letter-spacing: 0.05em;
+      display: grid;
+      grid-template-columns: 2.2rem 1fr 1fr 1fr 5.5rem;
+      gap: 10px;
+      padding: 0 16px 8px;
+      font-size: 0.8rem;
+      color: #666;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
-    .answer-toggle { display: flex; gap: 6px; align-items: center; }
+
+    .q-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .q-row {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: 2.2rem 1fr 1fr 1fr 5.5rem;
+      gap: 10px;
+      align-items: center;
+      transition: border-color 0.2s;
+    }
+    .q-row:hover { border-color: rgba(255,215,0,0.3); }
+
+    .q-num {
+      font-family: 'Dela Gothic One', cursive;
+      font-size: 1.1rem;
+      color: var(--gold);
+      text-align: center;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 9px 14px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #eee;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="text"]:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(255,215,0,0.15);
+    }
+
+    .answer-toggle {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
     .answer-toggle label {
-      display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 0.9rem;
-      padding: 6px 10px; border-radius: 4px; border: 1px solid #444; transition: all 0.15s;
+      padding: 7px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.9rem;
+      background: #1e1e3a;
+      color: #666;
+      border: 2px solid transparent;
+      transition: all 0.15s;
     }
-    .answer-toggle input[type="radio"] { display: none; }
-    .answer-toggle label.selected { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 700; }
+    .answer-toggle label:hover { background: #2a2a4a; color: #aaa; }
+    .answer-toggle label.selected {
+      background: rgba(255,215,0,0.15);
+      color: var(--gold);
+      border-color: var(--gold);
+    }
 
-    .json-section { margin-top: 28px; }
-    .json-section h3 { color: var(--gold); margin-bottom: 10px; font-size: 1rem; }
+    /* ── JSON Section ── */
+    .json-section {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .json-section h3 {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 10px;
+      letter-spacing: 0.05em;
+    }
     textarea {
-      width: 100%; padding: 12px; background: #0a0a1a; border: 1px solid #333;
-      border-radius: 8px; color: #aef; font-family: monospace; font-size: 0.85rem; resize: vertical;
+      width: 100%;
+      padding: 14px;
+      background: #080818;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #88ddff;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      resize: vertical;
+      outline: none;
+      line-height: 1.5;
     }
-    .json-buttons { display: flex; gap: 10px; margin-top: 10px; }
+    textarea:focus { border-color: rgba(136,221,255,0.4); }
+    .json-buttons { margin-top: 10px; display: flex; gap: 8px; }
 
-    .copy-all-section {
-      margin-top: 20px; padding: 16px; background: rgba(255,215,0,0.07);
-      border: 1px solid rgba(255,215,0,0.3); border-radius: 8px;
-      display: flex; align-items: center; gap: 12px;
+    /* ── Settings Tab ── */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
     }
-    .copy-all-section p { flex: 1; font-size: 0.9rem; color: #aaa; }
-
-    .panel-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-    .panel-actions { display: flex; gap: 8px; margin-left: auto; }
-
-    .toast {
-      position: fixed; bottom: 30px; right: 30px; background: #2a8a2a;
-      color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 700;
-      z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    .setting-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
     }
-    .toast.show { opacity: 1; }
+    .setting-card h3 {
+      font-family: 'Dela Gothic One', cursive;
+      font-size: 1rem;
+      color: var(--gold);
+      margin-bottom: 16px;
+      letter-spacing: 0.08em;
+    }
+    .setting-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .setting-field label {
+      font-size: 0.85rem;
+      color: #888;
+      letter-spacing: 0.05em;
+    }
+    input[type="number"] {
+      width: 120px;
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #eee;
+      font-size: 1.1rem;
+      font-weight: 700;
+      outline: none;
+    }
+    input[type="number"]:focus { border-color: var(--gold); }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: linear-gradient(135deg, #ffd700, #ffaa00);
+      color: #111;
+      font-weight: 700;
+      font-family: 'Dela Gothic One', cursive;
+      font-size: 1rem;
+      padding: 14px 32px;
+      border-radius: 40px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+      letter-spacing: 0.05em;
+      z-index: 999;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
   </style>
 </head>
 <body>
   <header>
-    <a href="/" class="back">← ゲームに戻る</a>
-    <h1>🛒 TROLLEY ADVENTURE — EDITOR</h1>
+    <a href="/" class="back">← ゲームへ戻る</a>
+    <h1>🎮 トロッコアドベンチャー EDITOR</h1>
     <button class="btn btn-gold" id="save-all-btn">💾 全チーム保存</button>
-    <button class="btn btn-red"  id="reset-btn">↺ リセット</button>
+    <button class="btn btn-red"  id="reset-btn">🔄 初期化</button>
+    <button class="btn btn-gray" id="export-all-btn">📤 エクスポート</button>
   </header>
-    <div class="editor-container">
-        <a href="/" class="back-link">← GAME BACK</a>
-        <h1>ENGINE EDITOR</h1>
-        
-        <div class="card">
-            <h2>Global Settings</h2>
-            <label>Current Theme</label>
-            <select id="theme-select">
-                <option value="cave">Cave (洞窟)</option>
-                <option value="jungle">Jungle (ジャングル)</option>
-                <option value="ice">Ice (氷の世界)</option>
-                <option value="space">Space (宇宙ステーション)</option>
-                <option value="underwater">Underwater (海底)</option>
-                <option value="cloud">Cloud (雲上都市)</option>
-                <option value="temple">Temple (溶岩神殿)</option>
-            </select>
-        </div>
 
   <main>
-    <!-- ゲーム設定 -->
-    <div style="background:var(--card);border-radius:12px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
-      <h2 style="color:var(--gold);font-size:1.1rem;white-space:nowrap;">⚙️ ゲーム設定</h2>
-      <label style="display:flex;align-items:center;gap:10px;font-size:1rem;">
-        制限時間（秒）：
-        <input type="number" id="timer-sec" min="3" max="30" step="1" value="5"
-          style="width:70px;padding:8px;background:#0a0a1a;border:1px solid #444;border-radius:6px;color:#fff;font-size:1rem;text-align:center;">
-      </label>
-      <label style="display:flex;align-items:center;gap:10px;font-size:1rem;">
-        問題数（チームごと）：
-        <input type="number" id="q-count" min="3" max="30" step="1" value="10"
-          style="width:70px;padding:8px;background:#0a0a1a;border:1px solid #444;border-radius:6px;color:#fff;font-size:1rem;text-align:center;">
-      </label>
-      <button class="btn btn-gold" id="save-settings-btn">設定を保存</button>
-    </div>
-
-    <div class="tabs"   id="tabs"></div>
+    <div class="tabs" id="tabs"></div>
     <div id="panels"></div>
-    <div class="copy-all-section">
-      <p>コピー→貼り付けで別チームに同じ問題セットをベースに編集できます。JSONをコピーして別チームのパネルで「JSONを貼り付け」してください。</p>
-      <button class="btn btn-gray" id="export-all-btn">📋 全データJSON出力</button>
-    </div>
   </main>
 
-  <div class="toast" id="toast">保存しました！</div>
+  <div id="toast">保存しました</div>
 
   <script>
-  const TEAMS = ['A','B','C','D'];
-  const TEAM_COLORS = { A:'#ff6b6b', B:'#4dabf7', C:'#51cf66', D:'#ffd43b' };
-  let Q_COUNT = 10;
-  let data = {};
+    const TEAMS = ['A', 'B', 'C', 'D'];
+    const TEAM_COLORS = { A: '#ff6b6b', B: '#4dabf7', C: '#51cf66', D: '#ffd43b' };
+    let data = {};
+    let Q_COUNT = 10;
 
-  // Load/save settings
-  function loadSettings() {
-    const s = localStorage.getItem('trolley_settings_v2');
-    const settings = s ? JSON.parse(s) : {};
-    document.getElementById('timer-sec').value    = settings.timerSec      ?? 5;
-    document.getElementById('q-count').value      = settings.questionCount ?? 10;
-    Q_COUNT = settings.questionCount ?? 10;
-  }
-  document.getElementById('save-settings-btn').onclick = () => {
-    const timerSec      = parseInt(document.getElementById('timer-sec').value) || 5;
-    const questionCount = parseInt(document.getElementById('q-count').value)   || 10;
-    localStorage.setItem('trolley_settings_v2', JSON.stringify({ timerSec, questionCount }));
-    // Rebuild UI if Q_COUNT changed
-    if (Q_COUNT !== questionCount) {
-      Q_COUNT = questionCount;
+    function loadSettings() {
+      const s = localStorage.getItem('trolley_settings_v2');
+      const settings = s ? JSON.parse(s) : {};
+      document.getElementById('timer-sec').value    = settings.timerSec      ?? 5;
+      document.getElementById('q-count').value      = settings.questionCount ?? 10;
+      Q_COUNT = settings.questionCount ?? 10;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('save-settings-btn').onclick = () => {
+        const timerSec      = parseInt(document.getElementById('timer-sec').value) || 5;
+        const questionCount = parseInt(document.getElementById('q-count').value)   || 10;
+        localStorage.setItem('trolley_settings_v2', JSON.stringify({ timerSec, questionCount }));
+        if (Q_COUNT !== questionCount) {
+          Q_COUNT = questionCount;
+          for (const t of TEAMS) {
+            while (data[t].length < Q_COUNT) data[t].push({ q:'', l:'', r:'', a:'left' });
+            data[t] = data[t].slice(0, Q_COUNT);
+          }
+          buildUI();
+        }
+        showToast(`制限時間 ${timerSec}秒 / ${questionCount}問 で保存しました`);
+      };
+    });
+
+    async function loadData() {
+      const s = localStorage.getItem('trolley_settings_v2');
+      Q_COUNT = s ? (JSON.parse(s).questionCount ?? 10) : 10;
+
+      const local = localStorage.getItem('trolley_questions_v2');
+      if (local) {
+        data = JSON.parse(local);
+      } else {
+        const resp = await fetch('/assets/data/questions.json');
+        data = await resp.json();
+      }
       for (const t of TEAMS) {
+        if (!data[t]) data[t] = [];
         while (data[t].length < Q_COUNT) data[t].push({ q:'', l:'', r:'', a:'left' });
         data[t] = data[t].slice(0, Q_COUNT);
       }
-      buildUI();
     }
-    showToast(`制限時間 ${timerSec}秒 / ${questionCount}問 で保存しました`);
-  };
 
-  async function loadData() {
-    // Read Q_COUNT from settings first
-    const s = localStorage.getItem('trolley_settings_v2');
-    Q_COUNT = s ? (JSON.parse(s).questionCount ?? 10) : 10;
+    function buildUI() {
+      const tabsEl   = document.getElementById('tabs');
+      const panelsEl = document.getElementById('panels');
+      tabsEl.innerHTML   = '';
+      panelsEl.innerHTML = '';
 
-    const local = localStorage.getItem('trolley_questions_v2');
-    if (local) { data = JSON.parse(local); }
-    else {
-      const resp = await fetch('/assets/data/questions.json');
-      data = await resp.json();
-    }
-    for (const t of TEAMS) {
-      if (!data[t]) data[t] = [];
-      while (data[t].length < Q_COUNT) data[t].push({ q:'', l:'', r:'', a:'left' });
-      data[t] = data[t].slice(0, Q_COUNT);
-    }
-  }
+      // Team tabs
+      TEAMS.forEach((id, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn' + (i === 0 ? ' active' : '');
+        btn.textContent = `チーム ${id}`;
+        btn.style.borderBottomColor = i === 0 ? TEAM_COLORS[id] : 'transparent';
+        btn.onclick = () => switchTab(id);
+        tabsEl.appendChild(btn);
 
-  function buildUI() {
-    const tabsEl = document.getElementById('tabs');
-    const panelsEl = document.getElementById('panels');
-    tabsEl.innerHTML = '';
-    panelsEl.innerHTML = '';
+        const panel = document.createElement('div');
+        panel.className = 'tab-panel' + (i === 0 ? ' active' : '');
+        panel.id = `panel-${id}`;
+        renderPanel(panel, id);
+        panelsEl.appendChild(panel);
+      });
 
-    TEAMS.forEach((id, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'tab-btn' + (i === 0 ? ' active' : '');
-      btn.textContent = `チーム ${id}`;
-      btn.style.color = i === 0 ? TEAM_COLORS[id] : '';
-      btn.onclick = () => switchTab(id);
-      tabsEl.appendChild(btn);
+      // Settings tab
+      const settingsBtn = document.createElement('button');
+      settingsBtn.className = 'tab-btn';
+      settingsBtn.textContent = '⚙ 設定';
+      settingsBtn.onclick = () => switchTabById('panel-settings');
+      tabsEl.appendChild(settingsBtn);
 
-      const panel = document.createElement('div');
-      panel.className = 'tab-panel' + (i === 0 ? ' active' : '');
-      panel.id = `panel-${id}`;
-      renderPanel(panel, id);
-      panelsEl.appendChild(panel);
-    });
-  }
-
-  function renderPanel(panel, id) {
-    const color = TEAM_COLORS[id];
-    const qs = data[id];
-
-    let rows = qs.map((q, i) => rowHTML(id, i, q)).join('');
-
-    panel.innerHTML = `
-      <div class="panel-header">
-        <div style="width:18px;height:18px;border-radius:50%;background:${color};flex-shrink:0"></div>
-        <h2 style="color:${color};font-size:1.3rem;">チーム ${id}（10問）</h2>
-        <div class="panel-actions">
-          <button class="btn btn-gray" onclick="copyTeam('${id}')">このチームをコピー</button>
-          <button class="btn btn-gray" onclick="pasteTeam('${id}')">貼り付け</button>
+      const settingsPanel = document.createElement('div');
+      settingsPanel.className = 'tab-panel';
+      settingsPanel.id = 'panel-settings';
+      settingsPanel.innerHTML = `
+        <div class="settings-grid">
+          <div class="setting-card">
+            <h3>⏱ タイマー設定</h3>
+            <div class="setting-field">
+              <label>制限時間（秒）</label>
+              <input type="number" id="timer-sec" min="3" max="30" value="5">
+            </div>
+            <div class="setting-field">
+              <label>問題数</label>
+              <input type="number" id="q-count" min="1" max="20" value="10">
+            </div>
+            <button class="btn btn-gold" id="save-settings-btn">設定を保存</button>
+          </div>
+          <div class="setting-card">
+            <h3>📋 データ管理</h3>
+            <p style="color:#888;font-size:0.9rem;margin-bottom:16px;line-height:1.6">
+              「全チーム保存」はLocalStorageに保存します。<br>
+              「エクスポート」でJSONとして書き出せます。<br>
+              「初期化」で questions.json に戻ります。
+            </p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-gold" id="save-all-btn2">💾 全チーム保存</button>
+              <button class="btn btn-gray" id="export-all-btn2">📤 JSONエクスポート</button>
+              <button class="btn btn-red"  id="reset-btn2">🔄 初期化</button>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="q-headers">
-        <div>#</div><div>問題文</div><div>左の答え</div><div>右の答え</div><div>正解</div>
-      </div>
-      <div class="q-list" id="qlist-${id}">${rows}</div>
-      <div class="json-section">
-        <h3>JSON で直接編集（上級者向け）</h3>
-        <textarea id="json-${id}" rows="6">${JSON.stringify(qs, null, 2)}</textarea>
-        <div class="json-buttons">
-          <button class="btn btn-gray" onclick="applyJson('${id}')">JSON を反映</button>
+      `;
+      panelsEl.appendChild(settingsPanel);
+
+      // Bind settings panel buttons
+      settingsPanel.querySelector('#save-all-btn2').onclick   = saveAll;
+      settingsPanel.querySelector('#export-all-btn2').onclick = exportAll;
+      settingsPanel.querySelector('#reset-btn2').onclick      = resetAll;
+    }
+
+    function renderPanel(panel, id) {
+      const color = TEAM_COLORS[id];
+      const qs = data[id];
+
+      panel.innerHTML = `
+        <div class="panel-header">
+          <div style="width:18px;height:18px;border-radius:50%;background:${color};flex-shrink:0"></div>
+          <h2 style="color:${color}">チーム ${id} — ${Q_COUNT}問</h2>
+          <div class="panel-actions">
+            <button class="btn btn-gray" onclick="copyTeam('${id}')">コピー</button>
+            <button class="btn btn-gray" onclick="pasteTeam('${id}')">貼り付け</button>
+          </div>
         </div>
-      </div>
-    `;
-    bindRowEvents(id);
-  }
+        <div class="q-headers">
+          <div>#</div><div>問題文</div><div>左の答え</div><div>右の答え</div><div>正解</div>
+        </div>
+        <div class="q-list" id="qlist-${id}">${qs.map((q, i) => rowHTML(id, i, q)).join('')}</div>
+        <div class="json-section">
+          <h3>JSON で直接編集（上級者向け）</h3>
+          <textarea id="json-${id}" rows="8">${JSON.stringify(qs, null, 2)}</textarea>
+          <div class="json-buttons">
+            <button class="btn btn-gray" onclick="applyJson('${id}')">JSON を反映</button>
+          </div>
+        </div>
+      `;
+      bindRowEvents(id);
+    }
 
-  function rowHTML(id, i, q) {
-    const lChk = q.a === 'left'  ? 'selected' : '';
-    const rChk = q.a === 'right' ? 'selected' : '';
-    return `
-    <div class="q-row" data-team="${id}" data-index="${i}">
-      <div class="q-num">${i+1}</div>
-      <input type="text" class="qf fq" placeholder="問題文" value="${esc(q.q)}">
-      <input type="text" class="qf fl" placeholder="左の答え" value="${esc(q.l)}">
-      <input type="text" class="qf fr" placeholder="右の答え" value="${esc(q.r)}">
-      <div class="answer-toggle">
-        <label class="${lChk}" data-val="left"  onclick="pickAnswer(this,'${id}',${i})">左</label>
-        <label class="${rChk}" data-val="right" onclick="pickAnswer(this,'${id}',${i})">右</label>
-      </div>
-    </div>`;
-  }
+    function rowHTML(id, i, q) {
+      const lChk = q.a === 'left'  ? 'selected' : '';
+      const rChk = q.a === 'right' ? 'selected' : '';
+      return `
+      <div class="q-row" data-team="${id}" data-index="${i}">
+        <div class="q-num">${i+1}</div>
+        <input type="text" class="qf fq" placeholder="問題文"    value="${esc(q.q)}">
+        <input type="text" class="qf fl" placeholder="左の答え"  value="${esc(q.l)}">
+        <input type="text" class="qf fr" placeholder="右の答え"  value="${esc(q.r)}">
+        <div class="answer-toggle">
+          <label class="${lChk}" data-val="left"  onclick="pickAnswer(this,'${id}',${i})">左</label>
+          <label class="${rChk}" data-val="right" onclick="pickAnswer(this,'${id}',${i})">右</label>
+        </div>
+      </div>`;
+    }
 
-  function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+    function esc(s) {
+      return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    }
 
-  function bindRowEvents(id) {
-    document.querySelectorAll(`#qlist-${id} .q-row`).forEach(row => {
-      row.querySelectorAll('.qf').forEach(inp => {
-        inp.addEventListener('input', () => {
-          const i = parseInt(row.dataset.index);
-          data[id][i].q = row.querySelector('.fq').value;
-          data[id][i].l = row.querySelector('.fl').value;
-          data[id][i].r = row.querySelector('.fr').value;
-          updateJsonTA(id);
+    function bindRowEvents(id) {
+      document.querySelectorAll(`#qlist-${id} .q-row`).forEach(row => {
+        row.querySelectorAll('.qf').forEach(inp => {
+          inp.addEventListener('input', () => {
+            const i = parseInt(row.dataset.index);
+            data[id][i].q = row.querySelector('.fq').value;
+            data[id][i].l = row.querySelector('.fl').value;
+            data[id][i].r = row.querySelector('.fr').value;
+            updateJsonTA(id);
+          });
         });
       });
-    });
-  }
+    }
 
-  window.pickAnswer = function(label, id, i) {
-    const row = label.closest('.q-row');
-    row.querySelectorAll('.answer-toggle label').forEach(l => l.classList.remove('selected'));
-    label.classList.add('selected');
-    data[id][i].a = label.dataset.val;
-    updateJsonTA(id);
-  };
+    window.pickAnswer = function(label, id, i) {
+      const row = label.closest('.q-row');
+      row.querySelectorAll('.answer-toggle label').forEach(l => l.classList.remove('selected'));
+      label.classList.add('selected');
+      data[id][i].a = label.dataset.val;
+      updateJsonTA(id);
+    };
 
-  function updateJsonTA(id) {
-    const ta = document.getElementById(`json-${id}`);
-    if (ta) ta.value = JSON.stringify(data[id], null, 2);
-  }
+    function updateJsonTA(id) {
+      const ta = document.getElementById(`json-${id}`);
+      if (ta) ta.value = JSON.stringify(data[id], null, 2);
+    }
 
-  window.applyJson = function(id) {
-    try {
-      const qs = JSON.parse(document.getElementById(`json-${id}`).value);
-      if (!Array.isArray(qs)) throw new Error('配列が必要です');
-      while (qs.length < Q_COUNT) qs.push({ q:'',l:'',r:'',a:'left' });
-      data[id] = qs.slice(0, Q_COUNT);
-      const panel = document.getElementById(`panel-${id}`);
-      renderPanel(panel, id);
-      showToast(`チーム${id}のJSONを反映しました`);
-    } catch(e) { alert('JSONエラー: ' + e.message); }
-  };
+    window.applyJson = function(id) {
+      try {
+        const qs = JSON.parse(document.getElementById(`json-${id}`).value);
+        if (!Array.isArray(qs)) throw new Error('配列が必要です');
+        while (qs.length < Q_COUNT) qs.push({ q:'',l:'',r:'',a:'left' });
+        data[id] = qs.slice(0, Q_COUNT);
+        renderPanel(document.getElementById(`panel-${id}`), id);
+        showToast(`チーム${id}のJSONを反映しました`);
+      } catch(e) { alert('JSONエラー: ' + e.message); }
+    };
 
-  window.copyTeam = function(id) {
-    navigator.clipboard.writeText(JSON.stringify(data[id], null, 2));
-    showToast(`チーム${id}をクリップボードにコピーしました`);
-  };
+    window.copyTeam = function(id) {
+      navigator.clipboard.writeText(JSON.stringify(data[id], null, 2));
+      showToast(`チーム${id}をクリップボードにコピーしました`);
+    };
 
-  window.pasteTeam = async function(id) {
-    try {
-      const text = await navigator.clipboard.readText();
-      const qs = JSON.parse(text);
-      if (!Array.isArray(qs)) throw new Error('配列ではありません');
-      while (qs.length < Q_COUNT) qs.push({ q:'',l:'',r:'',a:'left' });
-      data[id] = qs.slice(0, Q_COUNT);
-      renderPanel(document.getElementById(`panel-${id}`), id);
-      showToast(`チーム${id}に貼り付けました！`);
-    } catch(e) { alert('貼り付け失敗: ' + e.message); }
-  };
+    window.pasteTeam = async function(id) {
+      try {
+        const text = await navigator.clipboard.readText();
+        const qs = JSON.parse(text);
+        if (!Array.isArray(qs)) throw new Error('配列ではありません');
+        while (qs.length < Q_COUNT) qs.push({ q:'',l:'',r:'',a:'left' });
+        data[id] = qs.slice(0, Q_COUNT);
+        renderPanel(document.getElementById(`panel-${id}`), id);
+        showToast(`チーム${id}に貼り付けました！`);
+      } catch(e) { alert('貼り付け失敗: ' + e.message); }
+    };
 
-  function switchTab(id) {
-    document.querySelectorAll('.tab-btn').forEach((b, i) => {
-      const active = TEAMS[i] === id;
-      b.classList.toggle('active', active);
-      b.style.color = active ? TEAM_COLORS[TEAMS[i]] : '';
-    });
-    document.querySelectorAll('.tab-panel').forEach(p => {
-      p.classList.toggle('active', p.id === `panel-${id}`);
-    });
-  }
+    function switchTab(id) { switchTabById(`panel-${id}`); }
+    function switchTabById(panelId) {
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        const targetId = i < TEAMS.length ? `panel-${TEAMS[i]}` : 'panel-settings';
+        const active = targetId === panelId;
+        b.classList.toggle('active', active);
+        b.style.borderBottomColor = active
+          ? (i < TEAMS.length ? TEAM_COLORS[TEAMS[i]] : 'var(--gold)')
+          : 'transparent';
+      });
+      document.querySelectorAll('.tab-panel').forEach(p => {
+        p.classList.toggle('active', p.id === panelId);
+      });
+    }
 
-  function saveAll() {
-    localStorage.setItem('trolley_questions_v2', JSON.stringify(data));
-    showToast('全チームの問題を保存しました！');
-  }
+    function saveAll() {
+      localStorage.setItem('trolley_questions_v2', JSON.stringify(data));
+      showToast('全チームの問題を保存しました！');
+    }
 
-  function showToast(msg) {
-    const el = document.getElementById('toast');
-    el.textContent = msg;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 2500);
-  }
+    function exportAll() {
+      const w = window.open('', '_blank');
+      w.document.write(`<pre style="background:#111;color:#aef;padding:20px;font-size:13px;white-space:pre-wrap">${JSON.stringify(data,null,2)}</pre>`);
+    }
 
-  document.getElementById('save-all-btn').onclick = saveAll;
+    function resetAll() {
+      if (!confirm('保存データを消去して初期問題に戻しますか？')) return;
+      localStorage.removeItem('trolley_questions_v2');
+      location.reload();
+    }
 
-  document.getElementById('reset-btn').onclick = () => {
-    if (!confirm('保存データを消去して初期問題に戻しますか？')) return;
-    localStorage.removeItem('trolley_questions_v2');
-    location.reload();
-  };
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2500);
+    }
 
-  document.getElementById('export-all-btn').onclick = () => {
-    const w = window.open('', '_blank');
-    w.document.write(`<pre style="background:#111;color:#aef;padding:20px;font-size:13px;white-space:pre-wrap">${JSON.stringify(data,null,2)}</pre>`);
-  };
+    document.getElementById('save-all-btn').onclick   = saveAll;
+    document.getElementById('reset-btn').onclick      = resetAll;
+    document.getElementById('export-all-btn').onclick = exportAll;
 
-  (async () => { await loadData(); buildUI(); loadSettings(); })();
+    (async () => { await loadData(); buildUI(); loadSettings(); })();
   </script>
 </body>
 </html>

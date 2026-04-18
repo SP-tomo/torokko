@@ -3,58 +3,85 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TROLLER DISPLAY (Audience)</title>
-    <link rel="stylesheet" href="./style.css">
+    <title>トロッコアドベンチャー</title>
+    <link rel="stylesheet" href="/style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Shippori+Mincho:wght@800;900&display=swap" rel="stylesheet">
   </head>
   <body>
     <div id="app" class="game-container">
-      <canvas id="bg-canvas"></canvas>
-      
-      <!-- 放送演出レイヤー -->
+      <!-- 背景レイヤー -->
+      <div id="bg-layer" class="bg-layer">
+        <canvas id="bg-canvas"></canvas>
+        <div class="speed-lines"></div>
+      </div>
+
+      <!-- スタジオ照明 -->
+      <div id="studio-lights" class="studio-lights"></div>
+      <div id="spotlight-sweep" class="spotlight-sweep"></div>
+
+      <!-- ジャッジ演出用オーバーレイ -->
+      <div id="judge-text-overlay" class="judge-text-overlay">正解</div>
+      <div id="particles-container" class="particles-container"></div>
+
+      <!-- テロップスタック -->
       <div id="telop-stack" class="telop-stack"></div>
-      
-      <!-- 実況ナレーターパネル (Narrator.js対応) -->
+
+      <!-- ナレーター -->
       <div id="narrator-panel" class="narrator-panel hidden">
-        <div class="narrator-box">
-          <div class="narrator-face">🎤</div>
-          <div class="narrator-text-container">
-            <div class="narrator-text-clip"></div>
-            <div class="narrator-text"></div>
+        <div class="narrator-face">
+          <div class="narrator-eyes"></div>
+          <div class="narrator-mouth"></div>
+        </div>
+        <div class="narrator-bubble">
+          <div class="narrator-text-wrap">
+            <span class="narrator-text"></span>
+            <span class="narrator-text-clip" aria-hidden="true"></span>
           </div>
         </div>
       </div>
 
-      <div id="panelist-container" class="panelist-container"></div>
-      
-      <!-- メインゲーム画面 -->
-      <div class="hud">
-        <div id="question-text" class="question-box">READY?</div>
-        
-        <div class="timer-bar">
-          <div id="timer-fill" class="timer-fill"></div>
+      <!-- CM明けワイプカード -->
+      <div id="stage-card" class="stage-card hidden">
+        <div class="stage-card-inner">
+          <div class="stage-card-num" id="stage-card-num">STAGE 1</div>
+          <div class="stage-card-name" id="stage-card-name">洞窟ゾーン</div>
+        </div>
+      </div>
+
+      <!-- クイズHUDレイヤー -->
+      <div id="hud-layer" class="hud-layer">
+        <div id="question-box" class="question-box">
+          <h1 id="question-text">読み込み中...</h1>
         </div>
 
         <div class="choices-container">
-          <div id="choice-left" class="choice choice-left">
-            <span id="text-left">LEFT</span>
+          <div id="choice-left" class="choice-panel left">
+            <div class="choice-content">
+              <span class="choice-label">LEFT</span>
+              <span id="text-left" class="choice-text">---</span>
+            </div>
           </div>
-          <div id="choice-right" class="choice choice-right">
-            <span id="text-right">RIGHT</span>
+          <div id="choice-right" class="choice-panel right">
+            <div class="choice-content">
+              <span class="choice-label">RIGHT</span>
+              <span id="text-right" class="choice-text">---</span>
+            </div>
           </div>
+        </div>
+
+        <div id="timer-bar" class="timer-bar">
+          <div id="timer-fill" class="timer-fill"></div>
         </div>
       </div>
 
-      <!-- トロッコ本体 -->
-      <div id="trolley" class="trolley"></div>
+      <!-- トロッコレイヤー -->
+      <div id="trolley-layer" class="trolley-layer">
+        <div id="trolley" class="trolley"></div>
+      </div>
 
-      <!-- 判定オーバーレイ -->
-      <div id="judge-text-overlay" class="judge-text-overlay">正解</div>
-      
-      <div id="particles-container" class="particles-container"></div>
-
-      <!-- オーバーレイ (タイトル/リザルト等) -->
+      <!-- メッセージ/リザルトレイヤー -->
       <div id="overlay-layer" class="overlay-layer hidden">
         <div id="overlay-content" class="overlay-content">
           <h2 id="overlay-title">TITLE</h2>
@@ -63,10 +90,20 @@
         </div>
       </div>
 
-      <!-- システムHUD (現在何問目かなど) -->
+      <!-- システムHUD -->
       <div class="system-hud">
-        <div class="q-counter">STAGE: <span id="q-index">0 / 10</span></div>
+        <div class="q-counter">Q:<span id="q-index">0</span>/10</div>
+        <a href="/editor.html" class="editor-link">⚙ EDITOR</a>
       </div>
+
+      <!-- チームバッジ（左上） -->
+      <div id="team-badge" class="team-badge">チームA</div>
+
+      <!-- ポイント表示（チームバッジの下） -->
+      <div id="point-display" class="point-display">0 pt</div>
+
+      <!-- スコアボード（右側） -->
+      <div id="score-board" class="score-board"></div>
     </div>
     <script type="module" src="/main.js"></script>
   </body>
