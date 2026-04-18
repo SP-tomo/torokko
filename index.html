@@ -10,77 +10,42 @@
   </head>
   <body>
     <div id="app" class="game-container">
-      <!-- 背景レイヤー -->
-      <div id="bg-layer" class="bg-layer">
-        <canvas id="bg-canvas"></canvas>
-        <div class="speed-lines"></div>
-      </div>
-
-      <!-- スタジオ照明 -->
-      <div id="studio-lights" class="studio-lights"></div>
-      <div id="spotlight-sweep" class="spotlight-sweep"></div>
-
-      <!-- ジャッジ演出用オーバーレイ -->
-      <div id="judge-text-overlay">正解</div>
-      <div id="particles-container"></div>
-
-      <!-- テロップスタック -->
+      <canvas id="bg-canvas"></canvas>
+      
+      <!-- 放送演出レイヤー -->
       <div id="telop-stack" class="telop-stack"></div>
-
-      <!-- ナレーター -->
       <div id="narrator-panel" class="narrator-panel hidden">
-        <div class="narrator-face">
-          <div class="narrator-eyes"></div>
-          <div class="narrator-mouth"></div>
-        </div>
-        <div class="narrator-bubble">
-          <div class="narrator-text-wrap">
-            <span class="narrator-text"></span>
-            <span class="narrator-text-clip" aria-hidden="true"></span>
-          </div>
-        </div>
+        <div class="narrator-text"></div>
       </div>
-
-      <!-- CM明けワイプカード -->
-      <div id="stage-card" class="stage-card hidden">
-        <div class="stage-card-inner">
-          <div class="stage-card-num" id="stage-card-num">STAGE 2</div>
-          <div class="stage-card-name" id="stage-card-name">ジャングルゾーン</div>
-        </div>
-      </div>
-
-      <!-- クイズHUDレイヤー -->
-      <div id="hud-layer" class="hud-layer">
-        <div id="question-box" class="question-box">
-          <h1 id="question-text">読み込み中...</h1>
+      <div id="panelist-container" class="panelist-container"></div>
+      
+      <!-- メインゲーム画面 -->
+      <div class="hud">
+        <div id="question-text" class="question-box">READY?</div>
+        
+        <div class="timer-bar">
+          <div id="timer-fill" class="timer-fill"></div>
         </div>
 
         <div class="choices-container">
-          <div id="choice-left" class="choice-panel left">
-            <div class="choice-content">
-              <span class="choice-label">LEFT</span>
-              <span id="text-left" class="choice-text">---</span>
-            </div>
+          <div id="choice-left" class="choice choice-left">
+            <span id="text-left">LEFT</span>
           </div>
-          <div id="choice-right" class="choice-panel right">
-            <div class="choice-content">
-              <span class="choice-label">RIGHT</span>
-              <span id="text-right" class="choice-text">---</span>
-            </div>
+          <div id="choice-right" class="choice choice-right">
+            <span id="text-right">RIGHT</span>
           </div>
-        </div>
-
-        <div id="timer-bar" class="timer-bar">
-          <div id="timer-fill" class="timer-fill"></div>
         </div>
       </div>
 
-      <!-- トロッコレイヤー -->
-      <div id="trolley-layer" class="trolley-layer">
-        <div id="trolley" class="trolley"></div>
-      </div>
+      <!-- トロッコ本体 -->
+      <div id="trolley" class="trolley"></div>
 
-      <!-- メッセージ/リザルトレイヤー -->
+      <!-- 判定オーバーレイ -->
+      <div id="judge-text-overlay" class="judge-text-overlay">正解</div>
+      
+      <div id="particles-container" class="particles-container"></div>
+
+      <!-- オーバーレイ (タイトル/リザルト等) -->
       <div id="overlay-layer" class="overlay-layer hidden">
         <div id="overlay-content" class="overlay-content">
           <h2 id="overlay-title">TITLE</h2>
@@ -89,21 +54,10 @@
         </div>
       </div>
 
-      <!-- システムHUD -->
+      <!-- システムHUD (現在何問目かなど) -->
       <div class="system-hud">
-        <div class="q-counter">Q:<span id="q-index">0</span>/10</div>
-        <a href="/editor.html" class="editor-link">⚙ EDITOR</a>
         <div class="q-counter">STAGE: <span id="q-index">0 / 10</span></div>
       </div>
-
-      <!-- チームバッジ（左上） -->
-      <div id="team-badge" class="team-badge">チームA</div>
-
-      <!-- ポイント表示（チームバッジの下） -->
-      <div id="point-display" class="point-display">0 pt</div>
-
-      <!-- スコアボード（右側） -->
-      <div id="score-board" class="score-board"></div>
     </div>
     <script type="module" src="/main.js"></script>
   </body>
