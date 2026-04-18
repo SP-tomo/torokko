@@ -1,44 +1,35 @@
-# 🛒 Trolley Adventure Engine (アルティメット版)
+# 🛒 Trolley Adventure Engine (Ultimate Edition)
 
-クイズ番組「ネプリーグ」のトロッコアドベンチャーを再現した、ブラウザベースのゲームエンジンです。
-10問構成、3ステージ制、リアルな高画質アセット、ダイナミックな音響・視覚効果を搭載した「大会運営用」の決定版です。
+クイズ番組「ネプリーグ」のトロッコアドベンチャーを、放送クオリティで完全再現したブラウザベースのゲームエンジンです。
+4チーム対抗戦、10問構成の3ステージ制、そしてリアルタイム描画による無限トンネル背景を搭載しています。
 
-## 🌟 主な特徴
+## 🌟 公開サイト
+- **メインゲーム**: [https://SP-tomo.github.io/torokko/](https://SP-tomo.github.io/torokko/)
+- **管理・編集画面**: [https://SP-tomo.github.io/torokko/editor.html](https://SP-tomo.github.io/torokko/editor.html)
 
-- **10問・3ステージ構成**: 
-    - Stage 1: **Cave** (初級)
-    - Stage 2: **Jungle** (中級)
-    - Stage 3: **Temple/Lava** (上級)
-- **極限のリアリティ**: 生成AIにより作成された8K品質の背景アセットと、レールの振動・縦揺れをシミュレートする物理エフェクト。
-- **ダイナミック音響**: Web Audio APIによるリアルタイムBGM生成。
-- **統合エディタ (Editor)**: 専門知識なしで問題文や背景テーマを編集可能。
-- **GitHub Ready**: リポジトリ構成が整っており、すぐに公開可能です。
+## 🚀 主な機能
 
-## 🚀 使い方
+- **4チーム対抗戦システム**: チームA〜Dのスコア管理、放送風のスコアボード、各チーム個別の問題設定に対応。
+- **放送クオリティの演出**:
+    - **DirectorQueue**: 緻密に計算されたタイミングでナレーション、テロップ、効果音を同期。
+    - **Narrator**: タイプライター演出付きのナレーターシステム。
+    - **TelopSystem**: 複数のテロップを美しくスタック表示。
+- **無限トンネルエンジン**: 静止画ではなく、Canvas APIを用いたリアルタイム透視投影（パースペクティブ）描画により、極限の疾走感を演出。
+- **ダイナミック音源**: Web Audio APIによるシンセサイズ音響。機材なしでドラマチックな演出が可能。
+
+## 🛠 使い方
 
 1. `npm install`
 2. `npm run dev`
 3. ブラウザで `http://localhost:5173` を開く
 
-### 🛠 カスタマイズ (管理画面)
-- `http://localhost:5173/editor.html` にアクセスすることで、問題を10問分自由に設定できます。
-- 設定はブラウザの LocalStorage に保存されるため、ページをリロードしても保持されます。
+### ⚙ 設定とカスタマイズ (Editor)
+- `/editor.html` にアクセスすることで、チームごとの問題（全10問）を自由に編集できます。
+- **設定タブ**: 制限時間や問題数を一括変更可能です。
+- データはブラウザの LocalStorage に保存されるほか、JSONとしてエクスポートして共有も可能です。
 
-## 📦 GitHubへの公開手順
-
-このプロジェクトをご自身のGitHubアカウントに公開するには、以下の手順を実行してください：
-
-1. GitHubで新しいリポジトリ（例: `trolley-adventure`）を空の状態で作成します。
-2. ターミナルで以下のコマンドを実行します：
-   ```bash
-   git remote add origin https://github.com/あなたのユーザー名/trolley-adventure.git
-   git branch -M main
-   git push -u origin main
-   ```
-
-## 🎨 素材について
-- 背景およびトロッコの画像は生成AIを使用して作成された高品質なオリジナル素材です。
-- 音声はプログラムによって動的に生成されているため、権利関係の心配なく利用可能です。
+## 📦 デプロイについて
+GitHub Actions を使用して、`main` ブランチへのプッシュ時に自動的に GitHub Pages へデプロイされるよう設定されています。
 
 ---
 Produced by Antigravity (Advanced Agentic Coding AI)
