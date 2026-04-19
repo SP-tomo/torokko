@@ -102,8 +102,23 @@
       <!-- ポイント表示（チームバッジの下） -->
       <div id="point-display" class="point-display">0 pt</div>
 
-      <!-- スコアボード（右側） -->
+      <!-- スコアボード (右下) -->
       <div id="score-board" class="score-board"></div>
+
+      <!-- Dボタンロゴ & 進行バー (最下部) -->
+      <div class="bottom-overlay">
+        <div class="d-button-box">
+          <div class="d-button-circle">dボタン</div>
+          <div class="d-button-text">
+            <span>テレビで対戦に参加！</span>
+            <span>豪華チャンス！</span>
+          </div>
+        </div>
+        <div id="question-progress" class="question-progress">
+          <!-- 1 2 3 4 5 etc generated via script -->
+        </div>
+        <div class="broadcast-sp-logo">超リアルSP</div>
+      </div>
     </div>
     <script type="module" src="./main.js"></script>
   </body>

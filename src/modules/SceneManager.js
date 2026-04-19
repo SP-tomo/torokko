@@ -19,7 +19,29 @@ export class SceneManager {
 
     this._resize();
     window.addEventListener('resize', () => this._resize());
+
+    // Image assets
+    this._imgCache = {};
+    this._loadAssets();
+
     this._initObjects();
+  }
+
+  _loadAssets() {
+    const assets = [
+      { id: 'cave',       url: './assets/background/cave.png' },
+      { id: 'jungle',     url: './assets/background/jungle.png' },
+      { id: 'temple',     url: './assets/background/temple.png' },
+      { id: 'ice',        url: './assets/background/ice.png' },
+      { id: 'underwater', url: './assets/background/underwater.png' },
+      { id: 'space',      url: './assets/background/space.png' },
+      { id: 'cloud',      url: './assets/background/cloud.png' },
+    ];
+    assets.forEach(a => {
+      const img = new Image();
+      img.src = a.url;
+      img.onload = () => { this._imgCache[a.id] = img; };
+    });
   }
 
   _resize() {
@@ -113,7 +135,7 @@ export class SceneManager {
 
     const t = this._theme();
     this._drawBG(W, H, t);
-    this._drawTunnel(W, H, t);
+    // this._drawTunnel(W, H, t); // Disable procedural tunnel for realistic mode
     this._drawGrid(W, H, t);
     this._advanceAndSort();
     this._drawObjects(W, H, t);
@@ -123,6 +145,8 @@ export class SceneManager {
 
     ctx.restore();
   }
+
+  // _drawTrolley removed as per user request
 
   // ---- Theme config -----------------------------------------------------
   _theme() {
@@ -213,10 +237,28 @@ export class SceneManager {
 
   // ---- Background -------------------------------------------------------
   _drawBG(W, H, t) {
-    const g = this.ctx.createLinearGradient(0, 0, 0, H);
+    const ctx = this.ctx;
+    const img = this._imgCache[this.theme];
+    
+    // Draw base color in case image hasn't loaded
+    const g = ctx.createLinearGradient(0, 0, 0, H);
     t.sky.forEach((c, i) => g.addColorStop(i / (t.sky.length-1), c));
-    this.ctx.fillStyle = g;
-    this.ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    if (img) {
+      // Create a zooming effect to simulate movement
+      const zoomBase = 1.0;
+      const zoomMod  = (Math.sin(this._z * 0.01) * 0.005) + (this.speed * 0.01);
+      const zoom = zoomBase + zoomMod;
+      
+      const dw = W * zoom;
+      const dh = H * zoom;
+      const dx = (W - dw) / 2;
+      const dy = (H - dh) / 2;
+      
+      ctx.drawImage(img, dx, dy, dw, dh);
+    }
   }
 
   // ---- Tunnel geometry --------------------------------------------------

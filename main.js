@@ -94,6 +94,7 @@ class TrolleyAdventure {
       teamBadge:     document.getElementById('team-badge'),
       scoreBoard:    document.getElementById('score-board'),
       pointDisplay:  document.getElementById('point-display'),
+      qProgress:     document.getElementById('question-progress'),
     };
 
     this.telops   = new TelopSystem(this.els.telopStack);
@@ -304,6 +305,20 @@ class TrolleyAdventure {
 
   updateHUD() {
     this.els.qCounter.innerText = `${this.currentIndex + 1}`;
+    
+    // Update question progress bar (1 2 3 4 5 etc)
+    if (this.els.qProgress) {
+      const team = TEAMS[this.currentTeamIdx];
+      const answeredCount = this.teamScores[team.id].answered;
+      let html = '';
+      for (let i = 0; i < this.questionCount; i++) {
+        let cls = 'q-indicator';
+        if (i === this.currentIndex) cls += ' active';
+        if (i < answeredCount) cls += ' correct'; // Simplification: assume previous ones were correct if we advanced
+        html += `<div class="${cls}">${i + 1}</div>`;
+      }
+      this.els.qProgress.innerHTML = html;
+    }
   }
 
   updateTeamBadge() {
@@ -461,9 +476,9 @@ class TrolleyAdventure {
 
   advance() {
     this.currentIndex++;
-    const prevStage = stageOf(this.currentIndex - 1, this.questionCount);
-    const currStage = this.currentIndex < this.questionCount ? stageOf(this.currentIndex, this.questionCount) : -1;
-    if (currStage > prevStage) {
+    const prevStage = this._stageOf(this.currentIndex - 1);
+    const currStage = this.currentIndex < this.questionCount ? this._stageOf(this.currentIndex) : -1;
+    if (currStage >= 0 && currStage > prevStage) {
       this.playStageIntermission(currStage + 1);
     } else {
       this.nextQuestion();
@@ -472,7 +487,8 @@ class TrolleyAdventure {
 
   playStageIntermission(stageNum) {
     this.state = GameState.INTERMISSION;
-    const stageName = STAGE_NAME(this.currentIndex, this.questionCount);
+    const stageIdx = this._stageOf(this.currentIndex);
+    const stageName = this.stageThemes[stageIdx]?.name ?? 'NEXT ZONE';
     this.els.stageCardNum.textContent = `STAGE ${stageNum}`;
     this.els.stageCardName.textContent = stageName;
     this.els.stageCard.classList.remove('hidden');
