@@ -217,6 +217,10 @@
       grid-template-columns: 1fr 1fr;
       gap: 24px;
     }
+    @media (max-width: 600px) {
+      .settings-grid { grid-template-columns: 1fr; }
+    }
+    .setting-card-wide { grid-column: 1 / -1; }
     .setting-card {
       background: rgba(255,255,255,0.04);
       border: 1px solid var(--border);
@@ -408,15 +412,28 @@
               <button class="btn btn-red"   id="reset-btn2">🔄 初期化</button>
             </div>
           </div>
+          <div class="setting-card setting-card-wide">
+            <h3>🎯 問題セット切替</h3>
+            <p style="color:#888;font-size:0.9rem;margin-bottom:16px;line-height:1.6">
+              プリセットをワンタップで読み込みます。<br>
+              読み込み後「全チーム保存」で確定してください。
+            </p>
+            <div style="display:flex;flex-wrap:wrap;gap:12px">
+              <button class="btn btn-gold"  id="preset-set1-btn" style="flex:1;min-width:200px">📚 セット1（理科・地理・文化・数学）</button>
+              <button class="btn btn-gold"  id="preset-set2-btn" style="flex:1;min-width:200px">📚 セット2（歴史・科学技術・スポーツ・食）</button>
+            </div>
+          </div>
         </div>
       `;
       panelsEl.appendChild(settingsPanel);
 
       // Bind settings panel buttons
-      settingsPanel.querySelector('#save-all-btn2').onclick   = saveAll;
-      settingsPanel.querySelector('#export-all-btn2').onclick = exportAll;
-      settingsPanel.querySelector('#import-all-btn2').onclick = importAll;
-      settingsPanel.querySelector('#reset-btn2').onclick      = resetAll;
+      settingsPanel.querySelector('#save-all-btn2').onclick     = saveAll;
+      settingsPanel.querySelector('#export-all-btn2').onclick   = exportAll;
+      settingsPanel.querySelector('#import-all-btn2').onclick   = importAll;
+      settingsPanel.querySelector('#reset-btn2').onclick        = resetAll;
+      settingsPanel.querySelector('#preset-set1-btn').onclick   = () => loadPreset('./assets/data/questions.json',      'セット1');
+      settingsPanel.querySelector('#preset-set2-btn').onclick   = () => loadPreset('./assets/data/questions_set2.json', 'セット2');
     }
 
     function renderPanel(panel, id) {
@@ -575,6 +592,26 @@
       };
       reader.readAsText(file);
     });
+
+    async function loadPreset(url, label) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const imported = await res.json();
+        for (const id of TEAMS) {
+          if (!Array.isArray(imported[id])) throw new Error(`チーム${id}のデータがありません`);
+        }
+        for (const id of TEAMS) {
+          const qs = imported[id];
+          while (qs.length < Q_COUNT) qs.push({ q:'', l:'', r:'', a:'left' });
+          data[id] = qs.slice(0, Q_COUNT);
+          renderPanel(document.getElementById(`panel-${id}`), id);
+        }
+        showToast(`${label}を読み込みました！「全チーム保存」で確定してください`);
+      } catch(err) {
+        alert(`${label}の読み込み失敗: ` + err.message);
+      }
+    }
 
     function resetAll() {
       if (!confirm('保存データを消去して初期問題に戻しますか？')) return;
