@@ -256,19 +256,6 @@ class TrolleyAdventure {
     this.scene.shake = 2;
     this.sounds.setVolume(0.5);
 
-    // Show stage transition card when stage changes
-    if (this.currentIndex > 0) {
-      const prevStage = this._stageOf(this.currentIndex - 1);
-      if (prevStage !== stageIdx) {
-        this.els.stageCardNum.textContent  = this.stageThemes[stageIdx]?.name ?? `STAGE ${stageIdx+1}`;
-        this.els.stageCardName.textContent = `ステージ ${stageIdx+1}`;
-        this.els.stageCard.classList.remove('hidden');
-        const card = this.els.stageCard;
-        card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
-        setTimeout(() => this.els.stageCard.classList.add('hidden'), 2200);
-      }
-    }
-
     const q = this._currentQuestion();
     this.els.qText.innerText = q.q;
     this.els.textLeft.innerText  = q.l;

@@ -59,6 +59,8 @@
     .btn-gold  { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; }
     .btn-red   { background: #c03030; color: #fff; }
     .btn-gray  { background: #2a2a4a; color: #ccc; border: 1px solid #3a3a6a; }
+    .btn-green { background: #1a7a4a; color: #fff; }
+    .btn-green:hover { background: #23a361; }
     .back {
       color: var(--gold);
       text-decoration: none;
@@ -283,9 +285,10 @@
   <header>
     <a href="./index.html" class="back">← ゲームへ戻る</a>
     <h1>🎮 トロッコアドベンチャー EDITOR</h1>
-    <button class="btn btn-gold" id="save-all-btn">💾 全チーム保存</button>
-    <button class="btn btn-red"  id="reset-btn">🔄 初期化</button>
-    <button class="btn btn-gray" id="export-all-btn">📤 エクスポート</button>
+    <button class="btn btn-gold"  id="save-all-btn">💾 全チーム保存</button>
+    <button class="btn btn-red"   id="reset-btn">🔄 初期化</button>
+    <button class="btn btn-gray"  id="export-all-btn">📤 エクスポート</button>
+    <button class="btn btn-green" id="import-btn">📥 インポート</button>
   </header>
 
   <main>
@@ -398,9 +401,10 @@
               「初期化」で questions.json に戻ります。
             </p>
             <div style="display:flex;flex-direction:column;gap:8px">
-              <button class="btn btn-gold" id="save-all-btn2">💾 全チーム保存</button>
-              <button class="btn btn-gray" id="export-all-btn2">📤 JSONエクスポート</button>
-              <button class="btn btn-red"  id="reset-btn2">🔄 初期化</button>
+              <button class="btn btn-gold"  id="save-all-btn2">💾 全チーム保存</button>
+              <button class="btn btn-gray"  id="export-all-btn2">📤 JSONエクスポート</button>
+              <button class="btn btn-green" id="import-all-btn2">📥 JSONインポート</button>
+              <button class="btn btn-red"   id="reset-btn2">🔄 初期化</button>
             </div>
           </div>
         </div>
@@ -410,6 +414,7 @@
       // Bind settings panel buttons
       settingsPanel.querySelector('#save-all-btn2').onclick   = saveAll;
       settingsPanel.querySelector('#export-all-btn2').onclick = exportAll;
+      settingsPanel.querySelector('#import-all-btn2').onclick = importAll;
       settingsPanel.querySelector('#reset-btn2').onclick      = resetAll;
     }
 
@@ -541,6 +546,35 @@
       w.document.write(`<pre style="background:#111;color:#aef;padding:20px;font-size:13px;white-space:pre-wrap">${JSON.stringify(data,null,2)}</pre>`);
     }
 
+    function importAll() {
+      document.getElementById('import-file-input').click();
+    }
+
+    document.getElementById('import-file-input').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        try {
+          const imported = JSON.parse(ev.target.result);
+          for (const id of TEAMS) {
+            if (!Array.isArray(imported[id])) throw new Error(`チーム${id}のデータがありません`);
+          }
+          for (const id of TEAMS) {
+            const qs = imported[id];
+            while (qs.length < Q_COUNT) qs.push({ q:'', l:'', r:'', a:'left' });
+            data[id] = qs.slice(0, Q_COUNT);
+            renderPanel(document.getElementById(`panel-${id}`), id);
+          }
+          showToast('全チームをインポートしました！');
+        } catch(err) {
+          alert('インポート失敗: ' + err.message);
+        }
+        e.target.value = '';
+      };
+      reader.readAsText(file);
+    });
+
     function resetAll() {
       if (!confirm('保存データを消去して初期問題に戻しますか？')) return;
       localStorage.removeItem('trolley_questions_v2');
@@ -557,8 +591,10 @@
     document.getElementById('save-all-btn').onclick   = saveAll;
     document.getElementById('reset-btn').onclick      = resetAll;
     document.getElementById('export-all-btn').onclick = exportAll;
+    document.getElementById('import-btn').onclick     = importAll;
 
     (async () => { await loadData(); buildUI(); loadSettings(); })();
   </script>
+  <input type="file" id="import-file-input" accept=".json" style="display:none">
 </body>
 </html>
