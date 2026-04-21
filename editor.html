@@ -282,6 +282,7 @@
   </style>
 </head>
 <body>
+  <input type="file" id="import-file-input" accept=".json" style="display:none">
   <header>
     <a href="./index.html" class="back">← ゲームへ戻る</a>
     <h1>🎮 トロッコアドベンチャー EDITOR</h1>
@@ -595,6 +596,5 @@
 
     (async () => { await loadData(); buildUI(); loadSettings(); })();
   </script>
-  <input type="file" id="import-file-input" accept=".json" style="display:none">
 </body>
 </html>

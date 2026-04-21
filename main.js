@@ -26,7 +26,7 @@ const TEAMS = [
   { id: 'D', name: 'チームD', color: '#ffd43b', key: 'D' },
 ];
 
-// 7 available themes — randomly shuffled into 5 stages each game
+// 7 available themes — randomly shuffled into 3 stages each game
 const ALL_THEMES = [
   { id: 'cave',       name: '洞窟ゾーン' },
   { id: 'jungle',     name: 'ジャングルゾーン' },
@@ -36,7 +36,7 @@ const ALL_THEMES = [
   { id: 'space',      name: '宇宙ゾーン' },
   { id: 'cloud',      name: '雲海ゾーン' },
 ];
-const N_STAGES = 5;
+const N_STAGES = 3;
 
 function generateStageThemes() {
   // Shuffle all themes and take the first N_STAGES
