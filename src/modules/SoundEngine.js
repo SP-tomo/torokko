@@ -1,6 +1,11 @@
-// BGM_FILE: place your BGM file at public/assets/audio/bgm_main.mp3
-// If the file exists it is used; otherwise procedural BGM plays as fallback.
-const BGM_FILE = './assets/audio/bgm_main.mp3';
+// BGM: place your BGM file at public/assets/audio/ with one of these names.
+// Supported formats: m4a, mp3, ogg, wav  (tried in this order)
+const BGM_CANDIDATES = [
+  './assets/audio/bgm_main.m4a',
+  './assets/audio/bgm_main.mp3',
+  './assets/audio/bgm_main.ogg',
+  './assets/audio/bgm_main.wav',
+];
 
 export class SoundEngine {
   constructor() {
@@ -15,7 +20,9 @@ export class SoundEngine {
     this._preloadBgmFile();
   }
 
-  _preloadBgmFile() {
+  _preloadBgmFile(candidates = [...BGM_CANDIDATES]) {
+    if (candidates.length === 0) return; // all tried, none worked
+    const path = candidates.shift();
     const audio = new Audio();
     audio.preload = 'auto';
     audio.loop = true;
@@ -23,9 +30,10 @@ export class SoundEngine {
       this.bgmAudio = audio;
     }, { once: true });
     audio.addEventListener('error', () => {
-      this.bgmAudio = null; // file not found — will use procedural
+      // This format failed — try the next candidate
+      this._preloadBgmFile(candidates);
     }, { once: true });
-    audio.src = BGM_FILE;
+    audio.src = path;
     audio.load();
   }
 
