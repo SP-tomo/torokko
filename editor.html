@@ -421,6 +421,8 @@
             <div style="display:flex;flex-wrap:wrap;gap:12px">
               <button class="btn btn-gold"  id="preset-set1-btn" style="flex:1;min-width:200px">📚 セット1（理科・地理・文化・数学）</button>
               <button class="btn btn-gold"  id="preset-set2-btn" style="flex:1;min-width:200px">📚 セット2（歴史・科学技術・スポーツ・食）</button>
+              <button class="btn btn-green" id="preset-set3-btn" style="flex:1;min-width:200px">🌟 セット3・小学生（生き物・日本・ふしぎ・算数）</button>
+              <button class="btn btn-green" id="preset-set4-btn" style="flex:1;min-width:200px">🌟 セット4・小学生（食べ物・スポーツ・アニメ・体）</button>
             </div>
           </div>
         </div>
@@ -434,6 +436,8 @@
       settingsPanel.querySelector('#reset-btn2').onclick        = resetAll;
       settingsPanel.querySelector('#preset-set1-btn').onclick   = () => loadPreset('./assets/data/questions.json',      'セット1');
       settingsPanel.querySelector('#preset-set2-btn').onclick   = () => loadPreset('./assets/data/questions_set2.json', 'セット2');
+      settingsPanel.querySelector('#preset-set3-btn').onclick   = () => loadPreset('./assets/data/questions_set3.json', 'セット3');
+      settingsPanel.querySelector('#preset-set4-btn').onclick   = () => loadPreset('./assets/data/questions_set4.json', 'セット4');
     }
 
     function renderPanel(panel, id) {
