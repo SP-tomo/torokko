@@ -61,6 +61,8 @@
     .btn-gray  { background: #2a2a4a; color: #ccc; border: 1px solid #3a3a6a; }
     .btn-green { background: #1a7a4a; color: #fff; }
     .btn-green:hover { background: #23a361; }
+    .btn-blue  { background: #1a4a8a; color: #fff; }
+    .btn-blue:hover  { background: #2360b8; }
     .back {
       color: var(--gold);
       text-decoration: none;
@@ -423,6 +425,7 @@
               <button class="btn btn-gold"  id="preset-set2-btn" style="flex:1;min-width:200px">📚 セット2（歴史・科学技術・スポーツ・食）</button>
               <button class="btn btn-green" id="preset-set3-btn" style="flex:1;min-width:200px">🌟 セット3・小学生（生き物・日本・ふしぎ・算数）</button>
               <button class="btn btn-green" id="preset-set4-btn" style="flex:1;min-width:200px">🌟 セット4・小学生（食べ物・スポーツ・アニメ・体）</button>
+              <button class="btn btn-blue"  id="preset-set5-btn" style="flex:1;min-width:200px">🎷 セット5・マーチング（ガード／鼓笛女子吹奏女子／鼓笛男子吹奏男子／ドラム男子）</button>
             </div>
           </div>
         </div>
@@ -438,6 +441,7 @@
       settingsPanel.querySelector('#preset-set2-btn').onclick   = () => loadPreset('./assets/data/questions_set2.json', 'セット2');
       settingsPanel.querySelector('#preset-set3-btn').onclick   = () => loadPreset('./assets/data/questions_set3.json', 'セット3');
       settingsPanel.querySelector('#preset-set4-btn').onclick   = () => loadPreset('./assets/data/questions_set4.json', 'セット4');
+      settingsPanel.querySelector('#preset-set5-btn').onclick   = () => loadPreset('./assets/data/questions_set5.json', 'セット5');
     }
 
     function renderPanel(panel, id) {
