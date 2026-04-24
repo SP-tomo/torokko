@@ -1,3 +1,7 @@
+// BGM_FILE: place your BGM file at public/assets/audio/bgm_main.mp3
+// If the file exists it is used; otherwise procedural BGM plays as fallback.
+const BGM_FILE = './assets/audio/bgm_main.mp3';
+
 export class SoundEngine {
   constructor() {
     this.ctx = null;
@@ -5,6 +9,24 @@ export class SoundEngine {
     this.bgmInterval = null;
     this.beatCount = 0;
     this.tension = 1.0;
+
+    // File-based BGM (null until successfully pre-loaded)
+    this.bgmAudio = null;
+    this._preloadBgmFile();
+  }
+
+  _preloadBgmFile() {
+    const audio = new Audio();
+    audio.preload = 'auto';
+    audio.loop = true;
+    audio.addEventListener('canplaythrough', () => {
+      this.bgmAudio = audio;
+    }, { once: true });
+    audio.addEventListener('error', () => {
+      this.bgmAudio = null; // file not found — will use procedural
+    }, { once: true });
+    audio.src = BGM_FILE;
+    audio.load();
   }
 
   init() {
@@ -18,6 +40,10 @@ export class SoundEngine {
   setVolume(val) {
     if (!this.ctx) return;
     this.masterGain.gain.setTargetAtTime(val, this.ctx.currentTime, 0.1);
+    // Mirror volume on audio-file BGM
+    if (this.bgmAudio && !this.bgmAudio.paused) {
+      this.bgmAudio.volume = Math.max(0, Math.min(1, val));
+    }
   }
 
   ensureRunning() {
@@ -31,12 +57,35 @@ export class SoundEngine {
   startBGM() {
     this.init();
     this.ensureRunning();
+
+    // Try file-based BGM first
+    if (this.bgmAudio && this.bgmAudio.readyState >= 3) {
+      this.bgmAudio.volume = this.masterGain.gain.value;
+      this.bgmAudio.currentTime = 0;
+      this.bgmAudio.play().catch(() => {
+        // Autoplay blocked or file failed — fall back to procedural
+        this.bgmAudio = null;
+        this._startProceduralBGM();
+      });
+      return;
+    }
+
+    this._startProceduralBGM();
+  }
+
+  _startProceduralBGM() {
     if (this.bgmInterval) return;
     this.beatCount = 0;
     this.bgmInterval = setInterval(() => this.playBeat(), 240); // ~125BPM
   }
 
   stopBGM() {
+    // Stop file BGM
+    if (this.bgmAudio && !this.bgmAudio.paused) {
+      this.bgmAudio.pause();
+      this.bgmAudio.currentTime = 0;
+    }
+    // Stop procedural BGM
     if (this.bgmInterval) {
       clearInterval(this.bgmInterval);
       this.bgmInterval = null;
@@ -234,7 +283,6 @@ export class SoundEngine {
         osc.start(t); osc.stop(t + 0.55);
       });
     });
-    // Transient burst
     const bufferSize = Math.floor(this.ctx.sampleRate * 0.08);
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const data   = buffer.getChannelData(0);
