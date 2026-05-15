@@ -81,6 +81,14 @@
         <div id="trolley" class="trolley"></div>
       </div>
 
+      <!-- 一時停止オーバーレイ -->
+      <div id="pause-overlay" class="pause-overlay hidden">
+        <div class="pause-content">
+          <div class="pause-title">⏸ 一時停止</div>
+          <button id="resume-btn" class="resume-btn">再開する</button>
+        </div>
+      </div>
+
       <!-- メッセージ/リザルトレイヤー -->
       <div id="overlay-layer" class="overlay-layer hidden">
         <div id="overlay-content" class="overlay-content">
@@ -93,7 +101,8 @@
       <!-- システムHUD -->
       <div class="system-hud">
         <div class="q-counter">Q:<span id="q-index">0</span>/10</div>
-        <a href="./editor.html" class="editor-link">⚙ EDITOR</a>
+        <button id="pause-btn" class="pause-btn" title="P キーで一時停止">⏸</button>
+        <a href="./editor.html" class="editor-link" target="_blank">⚙ EDITOR</a>
       </div>
 
       <!-- チームバッジ（左上） -->

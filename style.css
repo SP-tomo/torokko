@@ -337,6 +337,59 @@ html, body {
   background: rgba(255,215,0,0.1);
 }
 
+.pause-btn {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.5);
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.pause-btn:hover {
+  color: #fff;
+  border-color: var(--gold);
+  background: rgba(255,215,0,0.1);
+}
+
+/* ===== PAUSE OVERLAY ================================================ */
+.pause-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 260;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+.pause-overlay.hidden { display: none; }
+.pause-content { text-align: center; }
+.pause-title {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  color: #fff;
+  letter-spacing: 0.08em;
+  margin-bottom: 2rem;
+  text-shadow: 0 0 40px rgba(255,255,255,0.25);
+}
+.resume-btn {
+  font-family: var(--font-body);
+  font-size: 1.4rem;
+  font-weight: 900;
+  padding: 0.9rem 3.5rem;
+  background: var(--gold-gradient);
+  color: #111;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.15s;
+  box-shadow: 0 4px 24px rgba(255,215,0,0.4);
+}
+.resume-btn:hover { transform: scale(1.06); }
+
 /* ===== TEAM BADGE & SCORE =========================================== */
 .team-badge {
   position: absolute;

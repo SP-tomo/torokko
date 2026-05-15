@@ -63,6 +63,8 @@ class TrolleyAdventure {
     this.timerDuration = settings.timerSec ?? 5;
     this.questionCount = settings.questionCount ?? 10;
 
+    this.paused   = false;
+
     this.sounds   = new SoundEngine();
     this.canvas   = document.getElementById('bg-canvas');
     this.scene    = new SceneManager(this.canvas);
@@ -87,6 +89,9 @@ class TrolleyAdventure {
       particles:     document.getElementById('particles-container'),
       telopStack:    document.getElementById('telop-stack'),
       narratorPanel: document.getElementById('narrator-panel'),
+      pauseOverlay:  document.getElementById('pause-overlay'),
+      pauseBtn:      document.getElementById('pause-btn'),
+      resumeBtn:     document.getElementById('resume-btn'),
       stageCard:     document.getElementById('stage-card'),
       stageCardNum:  document.getElementById('stage-card-num'),
       stageCardName: document.getElementById('stage-card-name'),
@@ -121,6 +126,8 @@ class TrolleyAdventure {
     window.addEventListener('keydown', (e) => this.handleKeyDown(e));
     this.els.choiceLeft.onclick  = () => this.selectChoice('left');
     this.els.choiceRight.onclick = () => this.selectChoice('right');
+    this.els.pauseBtn.onclick  = () => this.togglePause();
+    this.els.resumeBtn.onclick = () => this.togglePause();
 
     this.updateScoreBoard();
     this.showOverlay('TROLLEY ADVENTURE', `4チーム対抗戦・全${this.questionCount}問`, 'ゲームスタート');
@@ -188,7 +195,10 @@ class TrolleyAdventure {
     this.sounds.stopBGM();
     this.state = GameState.TEAM_RESULT;
 
-    // Reset all camera effects so the overlay is readable and clickable
+    // Reset all camera effects and pause state so the overlay is readable and clickable
+    this.paused = false;
+    this.els.pauseOverlay.classList.add('hidden');
+    this.els.pauseBtn.textContent = '⏸';
     this.els.app.classList.remove(
       'camera-fall', 'lean-left', 'lean-right', 'speed-rush',
       'shake', 'fall-shake', 'running', 'dimmed', 'big-reveal-flash', 'correct-bg-flash'
@@ -378,13 +388,37 @@ class TrolleyAdventure {
   }
 
   handleKeyDown(e) {
-    if (this.state !== GameState.QUESTION) return;
+    if (e.key === 'p' || e.key === 'P') { this.togglePause(); return; }
+    if (this.paused || this.state !== GameState.QUESTION) return;
     if (e.key === 'ArrowLeft')  this.selectChoice('left');
     if (e.key === 'ArrowRight') this.selectChoice('right');
   }
 
-  selectChoice(side) {
+  togglePause() {
     if (this.state !== GameState.QUESTION) return;
+    this.paused = !this.paused;
+    if (this.paused) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+      this._pausedSceneSpeed = this.scene.speed;
+      this._pausedSceneShake = this.scene.shake;
+      this.scene.speed = 0;
+      this.scene.shake = 0;
+      this.sounds.setVolume(0);
+      this.els.pauseOverlay.classList.remove('hidden');
+      this.els.pauseBtn.textContent = '▶';
+    } else {
+      this.scene.speed = this._pausedSceneSpeed;
+      this.scene.shake = this._pausedSceneShake;
+      this.sounds.setVolume(0.5);
+      this.els.pauseOverlay.classList.add('hidden');
+      this.els.pauseBtn.textContent = '⏸';
+      this.startTimer();
+    }
+  }
+
+  selectChoice(side) {
+    if (this.paused || this.state !== GameState.QUESTION) return;
     const isNew = this.selectedChoice !== side;
     this.selectedChoice = side;
     this.sounds.playSelect();
