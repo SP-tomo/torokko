@@ -16,6 +16,8 @@ export class SceneManager {
     this._raf     = null;
     this._running = false;
     this._objects = [];
+    this._tiltX       = 0;
+    this._tiltXTarget = 0;
 
     this._resize();
     window.addEventListener('resize', () => this._resize());
@@ -58,7 +60,8 @@ export class SceneManager {
 
   // ---- World constants --------------------------------------------------
   get FL()     { return 700; }                          // focal length
-  get VPX()    { return this.canvas.width  * 0.5; }
+  get VPX()    { return this.canvas.width  * (0.5 + this._tiltX * 0.05); }
+  set tiltDir(v) { this._tiltXTarget = v; }
   get VPY()    { return this.canvas.height * 0.42; }
   get WORLD_W(){ return 280; }  // tunnel half-width  (world units)
   get WORLD_H(){ return 240; }  // tunnel half-height (world units)
@@ -125,6 +128,7 @@ export class SceneManager {
   }
 
   _draw() {
+    this._tiltX += (this._tiltXTarget - this._tiltX) * 0.08;
     const { canvas, ctx } = this;
     const W = canvas.width, H = canvas.height;
     const sx = this.shake * this.speed > 0 ? (Math.random()-0.5) * this.shake * this.speed * 0.5 : 0;

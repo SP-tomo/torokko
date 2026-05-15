@@ -147,7 +147,11 @@ class TrolleyAdventure {
     this.director.cancel();
     this.narrator.hideNow();
     this.telops.clear();
-    this.els.app.classList.remove('running', 'correct-bg-flash', 'shake', 'dimmed', 'big-reveal-flash', 'fall-shake');
+    this.els.app.classList.remove(
+      'running', 'correct-bg-flash', 'shake', 'dimmed', 'big-reveal-flash', 'fall-shake',
+      'lean-left', 'lean-right', 'camera-fall', 'speed-rush'
+    );
+    this.scene.tiltDir = 0;
     this.els.spotlight.classList.remove('active');
     this.els.judgeOverlay.classList.remove('active');
     this.els.trolley.className = 'trolley';
@@ -266,8 +270,10 @@ class TrolleyAdventure {
     this.els.trolley.className = 'trolley';
     this.els.judgeOverlay.classList.remove('active');
     this.els.app.classList.remove(
-      'running', 'correct-bg-flash', 'shake', 'dimmed', 'big-reveal-flash', 'fall-shake'
+      'running', 'correct-bg-flash', 'shake', 'dimmed', 'big-reveal-flash', 'fall-shake',
+      'lean-left', 'lean-right', 'camera-fall', 'speed-rush'
     );
+    this.scene.tiltDir = 0;
     this.els.spotlight.classList.remove('active');
     this.els.timerFill.style.transform = 'scaleX(1)';
 
@@ -378,6 +384,9 @@ class TrolleyAdventure {
     this.els.choiceLeft.classList.toggle('selected',  side === 'left');
     this.els.choiceRight.classList.toggle('selected', side === 'right');
     this.els.trolley.className = `trolley tilt-${side}`;
+    this.els.app.classList.remove('lean-left', 'lean-right');
+    this.els.app.classList.add(side === 'left' ? 'lean-left' : 'lean-right');
+    this.scene.tiltDir = side === 'left' ? -1 : 1;
     if (isNew) {
       this.telops.pushData(side === 'left' ? TELOP_LINES.selectLeft : TELOP_LINES.selectRight);
       this.narrator.say(fmt(pick(NARRATOR_LINES.selected), { side: side === 'left' ? '左' : '右' }), { speedMs: 40 });
@@ -388,7 +397,7 @@ class TrolleyAdventure {
   enterJudging() {
     if (this.state !== GameState.QUESTION) return;
     this.state = GameState.JUDGING;
-    this.els.app.classList.add('running');
+    this.els.app.classList.add('running', 'speed-rush');
     this.scene.speed = 5.0;
     this.scene.shake = 10;
 
@@ -405,6 +414,8 @@ class TrolleyAdventure {
     this.sounds.setVolume(0.22);
     this.scene.speed = 1.5;
     this.scene.shake = 4;
+    this.els.app.classList.remove('speed-rush', 'lean-left', 'lean-right');
+    this.scene.tiltDir = 0;
     this.els.app.classList.add('dimmed');
     this.els.spotlight.classList.add('active');
     this.telops.pushData(TELOP_LINES.suspense);
@@ -446,6 +457,7 @@ class TrolleyAdventure {
     } else {
       this.sounds.playGasp();
       this.sounds.playIncorrect();
+      this.els.app.classList.remove('lean-left', 'lean-right', 'speed-rush');
       this.els.app.classList.add('shake');
       this.els.judgeOverlay.innerText = '不正解';
       this.els.judgeOverlay.className = 'active text-incorrect';
@@ -454,6 +466,7 @@ class TrolleyAdventure {
       this.narrator.say(pick(NARRATOR_LINES.incorrect), { speedMs: 45 });
       this.scene.speed = 0; this.scene.shake = 0;
       setTimeout(() => this.els.app.classList.add('fall-shake'), 300);
+      setTimeout(() => this.els.app.classList.add('camera-fall'), 700);
 
       this.director.play([
         { wait: 3000, fn: () => this.endTeamRun(false) },

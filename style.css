@@ -817,6 +817,28 @@ html, body {
 /* Speed run */
 .running #bg-canvas { filter: blur(1px); }
 
+/* === CAMERA LEAN (choice selection) ================================= */
+.game-container {
+  transition: transform 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.game-container.lean-left  { transform: rotate(-2.5deg) translateX(-18px) scale(1.04); }
+.game-container.lean-right { transform: rotate( 2.5deg) translateX( 18px) scale(1.04); }
+
+/* === CAMERA FALL (wrong answer) ===================================== */
+.game-container.camera-fall {
+  transform: rotate(30deg) translateY(55vh) scale(0.65);
+  transition: transform 2s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+}
+
+/* === SPEED RUSH (judging phase) ===================================== */
+.game-container.speed-rush {
+  animation: speedRush 0.14s steps(2) infinite;
+}
+@keyframes speedRush {
+  0%   { filter: brightness(1.12) saturate(1.4) contrast(1.08); }
+  100% { filter: brightness(0.93) saturate(0.85) hue-rotate(5deg); }
+}
+
 /* Dimmed suspense */
 .dimmed::after {
   content: '';
