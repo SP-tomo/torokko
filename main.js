@@ -188,6 +188,13 @@ class TrolleyAdventure {
     this.sounds.stopBGM();
     this.state = GameState.TEAM_RESULT;
 
+    // Reset all camera effects so the overlay is readable and clickable
+    this.els.app.classList.remove(
+      'camera-fall', 'lean-left', 'lean-right', 'speed-rush',
+      'shake', 'fall-shake', 'running', 'dimmed', 'big-reveal-flash', 'correct-bg-flash'
+    );
+    this.scene.tiltDir = 0;
+
     this.updateScoreBoard();
 
     const allDone = this.currentTeamIdx >= TEAMS.length - 1;
