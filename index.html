@@ -140,7 +140,26 @@
       const editorOverlay = document.getElementById('editor-overlay');
       const editorIframe  = document.getElementById('editor-iframe');
 
+      let _pausedForEditor = false;
+
+      function pauseForEditor() {
+        const g = window._game;
+        if (g && g.state === 'QUESTION' && !g.paused) {
+          g.togglePause();
+          _pausedForEditor = true;
+        }
+      }
+
+      function resumeAfterEditor() {
+        if (_pausedForEditor) {
+          const g = window._game;
+          if (g && g.paused) g.togglePause();
+          _pausedForEditor = false;
+        }
+      }
+
       document.getElementById('editor-open-btn').addEventListener('click', () => {
+        pauseForEditor();
         if (!editorIframe.src || editorIframe.src === window.location.href) {
           editorIframe.src = './editor.html';
         }
@@ -149,11 +168,13 @@
 
       document.getElementById('editor-close-btn').addEventListener('click', () => {
         editorOverlay.classList.add('hidden');
+        resumeAfterEditor();
       });
 
       window.addEventListener('message', (e) => {
         if (e.data === 'editor-close') {
           editorOverlay.classList.add('hidden');
+          resumeAfterEditor();
         }
       });
     </script>

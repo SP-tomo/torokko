@@ -585,4 +585,4 @@ class TrolleyAdventure {
   }
 }
 
-window.addEventListener('load', () => new TrolleyAdventure());
+window.addEventListener('load', () => { window._game = new TrolleyAdventure(); });
