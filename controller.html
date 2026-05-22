@@ -19,21 +19,49 @@
       -webkit-user-select: none;
     }
 
+    /* ── ヘッダー ── */
     #header {
-      text-align: center;
-      padding: 10px;
-      font-size: 14px;
-      color: #aaa;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
       flex-shrink: 0;
+    }
+
+    #header-title {
+      font-size: 13px;
+      color: #aaa;
       letter-spacing: 0.1em;
     }
 
+    #tilt-toggle {
+      font-family: 'Arial Black', sans-serif;
+      font-size: 13px;
+      font-weight: 900;
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 2px solid #555;
+      background: #222;
+      color: #888;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #tilt-toggle.active {
+      border-color: #4f4;
+      background: rgba(0, 200, 0, 0.15);
+      color: #4f4;
+    }
+
+    /* ── L/R ボタン ── */
     #buttons {
       flex: 1;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      padding: 8px 12px 16px;
+      padding: 8px 12px 8px;
+      min-height: 0;
     }
 
     .btn {
@@ -43,7 +71,7 @@
       font-weight: 900;
       cursor: pointer;
       letter-spacing: 0.05em;
-      transition: filter 0.1s, transform 0.08s;
+      transition: filter 0.1s, transform 0.08s, box-shadow 0.15s;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -59,7 +87,14 @@
     }
 
     .btn.flash {
-      filter: brightness(1.6);
+      filter: brightness(1.7);
+      transform: scale(0.96);
+    }
+
+    /* 傾き自動選択時のハイライト */
+    .btn.tilt-active {
+      filter: brightness(1.4);
+      transform: scale(1.04);
     }
 
     #btn-left {
@@ -85,23 +120,89 @@
       opacity: 0.85;
     }
 
+    /* ── 傾きインジケーター ── */
+    #tilt-section {
+      flex-shrink: 0;
+      padding: 0 14px 10px;
+      display: none;
+    }
+    #tilt-section.visible { display: block; }
+
+    #tilt-bar-wrap {
+      position: relative;
+      height: 36px;
+      background: #1a1a1a;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 2px solid #333;
+    }
+
+    /* 左ゾーン */
+    #tilt-bar-wrap::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: calc(50% - 15%);
+      background: rgba(30, 100, 255, 0.15);
+      border-radius: 18px 0 0 18px;
+    }
+    /* 右ゾーン */
+    #tilt-bar-wrap::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: calc(50% - 15%);
+      background: rgba(255, 50, 50, 0.15);
+      border-radius: 0 18px 18px 0;
+    }
+
+    #tilt-needle {
+      position: absolute;
+      top: 50%;
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      left: 50%;
+      transition: left 0.05s linear, background 0.15s;
+      z-index: 1;
+      box-shadow: 0 0 8px rgba(255,255,255,0.6);
+    }
+    #tilt-needle.go-left  { background: #5599ff; box-shadow: 0 0 12px rgba(80,150,255,0.8); }
+    #tilt-needle.go-right { background: #ff5555; box-shadow: 0 0 12px rgba(255,80,80,0.8); }
+
+    #tilt-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #555;
+      margin-top: 3px;
+      padding: 0 4px;
+    }
+
+    /* ── ステータスバー ── */
     #status-bar {
       flex-shrink: 0;
       text-align: center;
-      padding: 10px;
-      font-size: 18px;
+      padding: 8px 10px;
+      font-size: 16px;
       font-weight: bold;
-      min-height: 48px;
+      min-height: 40px;
       transition: color 0.2s;
     }
 
     #status-bar.left  { color: #5599ff; }
     #status-bar.right { color: #ff5555; }
     #status-bar.error { color: #ffaa00; }
+    #status-bar.tilt  { color: #4f4; }
   </style>
 </head>
 <body>
-  <div id="header">トロッコ コントローラー</div>
+  <div id="header">
+    <span id="header-title">トロッコ コントローラー</span>
+    <button id="tilt-toggle">傾き: OFF</button>
+  </div>
 
   <div id="buttons">
     <button class="btn" id="btn-left">
@@ -114,19 +215,41 @@
     </button>
   </div>
 
+  <div id="tilt-section">
+    <div id="tilt-bar-wrap">
+      <div id="tilt-needle"></div>
+    </div>
+    <div id="tilt-labels">
+      <span>← 左</span>
+      <span>中立</span>
+      <span>右 →</span>
+    </div>
+  </div>
+
   <div id="status-bar">待機中</div>
 
   <script>
-    const status = document.getElementById('status-bar');
+    const statusEl  = document.getElementById('status-bar');
+    const toggleBtn = document.getElementById('tilt-toggle');
+    const tiltSec   = document.getElementById('tilt-section');
+    const needle    = document.getElementById('tilt-needle');
 
-    async function send(cmd) {
-      const btnId = cmd === 'left' ? 'btn-left' : 'btn-right';
-      const btn = document.getElementById(btnId);
+    // ── 傾き設定 ──────────────────────────────────────
+    const THRESHOLD   = 22;  // この角度を超えたら選択 (°)
+    const NEUTRAL     = 10;  // ここに戻ったらリセット (°)
+
+    let tiltEnabled = false;
+    let tiltLocked  = false; // 一度送信したら中立に戻るまでロック
+
+    // ── ボタン送信 ────────────────────────────────────
+    async function send(cmd, viaTilt = false) {
+      const btn = document.getElementById(cmd === 'left' ? 'btn-left' : 'btn-right');
       btn.classList.add('flash');
-      setTimeout(() => btn.classList.remove('flash'), 150);
+      setTimeout(() => btn.classList.remove('flash'), 180);
 
-      status.className = cmd;
-      status.textContent = cmd === 'left' ? '← 左を選択' : '右 → を選択';
+      statusEl.className = cmd;
+      statusEl.textContent = cmd === 'left' ? '← 左を選択' : '右 → を選択';
+      if (viaTilt) statusEl.textContent += '　（傾き）';
 
       try {
         const res = await fetch('/api/ctrl/input', {
@@ -136,13 +259,115 @@
         });
         if (!res.ok) throw new Error();
       } catch {
-        status.className = 'error';
-        status.textContent = '⚠ 送信エラー（ゲーム画面と同じWi-Fiか確認してください）';
+        statusEl.className = 'error';
+        statusEl.textContent = '⚠ 送信エラー（同じWi-Fiか確認）';
       }
     }
 
     document.getElementById('btn-left').addEventListener('click',  () => send('left'));
     document.getElementById('btn-right').addEventListener('click', () => send('right'));
+
+    // ── 傾きトグル ────────────────────────────────────
+    toggleBtn.addEventListener('click', () => {
+      if (!tiltEnabled) {
+        enableTilt();
+      } else {
+        disableTilt();
+      }
+    });
+
+    function enableTilt() {
+      // iOS 13+ は許可ダイアログが必要
+      if (typeof DeviceOrientationEvent !== 'undefined' &&
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(perm => {
+            if (perm === 'granted') {
+              startTiltListener();
+            } else {
+              statusEl.className = 'error';
+              statusEl.textContent = '⚠ センサーの許可が必要です';
+            }
+          })
+          .catch(() => {
+            statusEl.className = 'error';
+            statusEl.textContent = '⚠ センサーの取得に失敗しました';
+          });
+      } else {
+        startTiltListener();
+      }
+    }
+
+    function startTiltListener() {
+      tiltEnabled = true;
+      tiltLocked  = false;
+      toggleBtn.textContent = '傾き: ON';
+      toggleBtn.classList.add('active');
+      tiltSec.classList.add('visible');
+      statusEl.className = 'tilt';
+      statusEl.textContent = '傾き検知 ON — レバーを傾けて選択';
+    }
+
+    function disableTilt() {
+      tiltEnabled = false;
+      tiltLocked  = false;
+      toggleBtn.textContent = '傾き: OFF';
+      toggleBtn.classList.remove('active');
+      tiltSec.classList.remove('visible');
+      needle.style.left = '50%';
+      needle.className = '';
+      // 左右ボタンのtiltハイライトを消す
+      document.getElementById('btn-left').classList.remove('tilt-active');
+      document.getElementById('btn-right').classList.remove('tilt-active');
+      if (statusEl.classList.contains('tilt')) {
+        statusEl.className = '';
+        statusEl.textContent = '待機中';
+      }
+    }
+
+    // ── DeviceOrientation ─────────────────────────────
+    window.addEventListener('deviceorientation', (e) => {
+      if (!tiltEnabled) return;
+
+      // gamma: 左右の傾き (-90〜90°)、負=左、正=右
+      const gamma = e.gamma ?? 0;
+
+      // ニードル位置 (0–100% に変換、±90°を端とする)
+      const clampedGamma = Math.max(-90, Math.min(90, gamma));
+      const pct = ((clampedGamma + 90) / 180) * 100;
+      needle.style.left = pct + '%';
+
+      // 閾値ゾーン表示
+      if (clampedGamma > THRESHOLD) {
+        needle.className = 'go-right';
+        document.getElementById('btn-right').classList.add('tilt-active');
+        document.getElementById('btn-left').classList.remove('tilt-active');
+      } else if (clampedGamma < -THRESHOLD) {
+        needle.className = 'go-left';
+        document.getElementById('btn-left').classList.add('tilt-active');
+        document.getElementById('btn-right').classList.remove('tilt-active');
+      } else {
+        needle.className = '';
+        document.getElementById('btn-left').classList.remove('tilt-active');
+        document.getElementById('btn-right').classList.remove('tilt-active');
+      }
+
+      // 送信ロジック
+      if (!tiltLocked) {
+        if (gamma > THRESHOLD) {
+          send('right', true);
+          tiltLocked = true;
+        } else if (gamma < -THRESHOLD) {
+          send('left', true);
+          tiltLocked = true;
+        }
+      } else {
+        // 中立に戻ったらロック解除
+        if (Math.abs(gamma) < NEUTRAL) {
+          tiltLocked = false;
+        }
+      }
+    });
   </script>
 </body>
 </html>
