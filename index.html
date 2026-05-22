@@ -102,7 +102,13 @@
       <div class="system-hud">
         <div class="q-counter">Q:<span id="q-index">0</span>/10</div>
         <button id="pause-btn" class="pause-btn" title="P キーで一時停止">⏸</button>
-        <a href="./editor.html" class="editor-link" target="_blank">⚙ EDITOR</a>
+        <button class="editor-link" id="editor-open-btn">⚙ EDITOR</button>
+      </div>
+
+      <!-- エディターオーバーレイ -->
+      <div id="editor-overlay" class="editor-overlay hidden">
+        <button id="editor-close-btn" class="editor-close-btn">✕ 閉じる</button>
+        <iframe id="editor-iframe" src="" class="editor-iframe" title="エディター"></iframe>
       </div>
 
       <!-- チームバッジ（左上） -->
@@ -130,5 +136,26 @@
       </div>
     </div>
     <script type="module" src="./main.js"></script>
+    <script>
+      const editorOverlay = document.getElementById('editor-overlay');
+      const editorIframe  = document.getElementById('editor-iframe');
+
+      document.getElementById('editor-open-btn').addEventListener('click', () => {
+        if (!editorIframe.src || editorIframe.src === window.location.href) {
+          editorIframe.src = './editor.html';
+        }
+        editorOverlay.classList.remove('hidden');
+      });
+
+      document.getElementById('editor-close-btn').addEventListener('click', () => {
+        editorOverlay.classList.add('hidden');
+      });
+
+      window.addEventListener('message', (e) => {
+        if (e.data === 'editor-close') {
+          editorOverlay.classList.add('hidden');
+        }
+      });
+    </script>
   </body>
 </html>

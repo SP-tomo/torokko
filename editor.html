@@ -290,7 +290,7 @@
 <body>
   <input type="file" id="import-file-input" accept=".json" style="display:none">
   <header>
-    <a href="./index.html" class="back">← ゲームへ戻る</a>
+    <a href="./index.html" class="back" id="back-to-game-btn">← ゲームへ戻る</a>
     <h1>🎮 トロッコアドベンチャー EDITOR</h1>
     <button class="btn btn-gold"  id="save-all-btn">💾 全チーム保存</button>
     <button class="btn btn-red"   id="reset-btn">🔄 初期化</button>
@@ -669,6 +669,13 @@
     document.getElementById('import-btn').onclick     = importAll;
 
     (async () => { await loadData(); buildUI(); loadSettings(); })();
+
+    document.getElementById('back-to-game-btn').addEventListener('click', (e) => {
+      if (window.parent !== window) {
+        e.preventDefault();
+        window.parent.postMessage('editor-close', '*');
+      }
+    });
   </script>
 </body>
 </html>

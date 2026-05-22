@@ -328,11 +328,46 @@ html, body {
   border-radius: 20px;
   transition: 0.2s;
   letter-spacing: 0.1em;
+  background: none;
+  cursor: pointer;
 }
 .editor-link:hover {
   color: #fff;
   border-color: var(--gold);
   background: rgba(255,215,0,0.1);
+}
+
+.editor-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  flex-direction: column;
+}
+.editor-overlay.hidden { display: none; }
+
+.editor-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 301;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.editor-close-btn:hover { background: rgba(255,255,255,0.22); }
+
+.editor-iframe {
+  width: 100%;
+  flex: 1;
+  border: none;
+  margin-top: 0;
 }
 
 .pause-btn {
