@@ -17,6 +17,7 @@ export class SoundEngine {
 
     // File-based BGM (null until successfully pre-loaded)
     this.bgmAudio = null;
+    this._bgmSource = null; // MediaElementSourceNode, created once ctx is ready
     this._preloadBgmFile();
   }
 
@@ -48,10 +49,6 @@ export class SoundEngine {
   setVolume(val) {
     if (!this.ctx) return;
     this.masterGain.gain.setTargetAtTime(val, this.ctx.currentTime, 0.1);
-    // Mirror volume on audio-file BGM
-    if (this.bgmAudio && !this.bgmAudio.paused) {
-      this.bgmAudio.volume = Math.max(0, Math.min(1, val));
-    }
   }
 
   ensureRunning() {
@@ -66,13 +63,18 @@ export class SoundEngine {
     this.init();
     this.ensureRunning();
 
-    // Try file-based BGM first
+    // Try file-based BGM first, routed through AudioContext so it uses
+    // the same output device as the procedural SE (avoids HDMI/projector split)
     if (this.bgmAudio && this.bgmAudio.readyState >= 3) {
-      this.bgmAudio.volume = this.masterGain.gain.value;
+      if (!this._bgmSource) {
+        this._bgmSource = this.ctx.createMediaElementSource(this.bgmAudio);
+        this._bgmSource.connect(this.masterGain);
+        this.bgmAudio.volume = 1; // gain controlled by masterGain
+      }
       this.bgmAudio.currentTime = 0;
       this.bgmAudio.play().catch(() => {
-        // Autoplay blocked or file failed — fall back to procedural
         this.bgmAudio = null;
+        this._bgmSource = null;
         this._startProceduralBGM();
       });
       return;
