@@ -18,6 +18,7 @@ export class SceneManager {
     this._objects = [];
     this._tiltX       = 0;
     this._tiltXTarget = 0;
+    this._dpr     = 1;
 
     this._resize();
     window.addEventListener('resize', () => this._resize());
@@ -47,8 +48,14 @@ export class SceneManager {
   }
 
   _resize() {
-    this.canvas.width  = window.innerWidth;
-    this.canvas.height = window.innerHeight;
+    const dpr = window.devicePixelRatio || 1;
+    this._dpr = dpr;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    this.canvas.width  = w * dpr;
+    this.canvas.height = h * dpr;
+    this.canvas.style.width  = w + 'px';
+    this.canvas.style.height = h + 'px';
   }
 
   setTheme(theme) {
@@ -130,11 +137,14 @@ export class SceneManager {
   _draw() {
     this._tiltX += (this._tiltXTarget - this._tiltX) * 0.08;
     const { canvas, ctx } = this;
-    const W = canvas.width, H = canvas.height;
+    const dpr = this._dpr;
+    const W = canvas.width / dpr;
+    const H = canvas.height / dpr;
     const sx = this.shake * this.speed > 0 ? (Math.random()-0.5) * this.shake * this.speed * 0.5 : 0;
     const sy = this.shake * this.speed > 0 ? (Math.random()-0.5) * this.shake * this.speed * 0.25 : 0;
 
     ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.translate(sx, sy);
 
     const t = this._theme();
