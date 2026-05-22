@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 
 export default defineConfig({
   base: '/torokko/',
@@ -7,6 +8,7 @@ export default defineConfig({
     host: true,
   },
   plugins: [
+    basicSsl(),
     {
       name: 'controller-relay',
       configureServer(server) {
@@ -16,7 +18,6 @@ export default defineConfig({
           if (req.url === '/api/ctrl/stream') {
             res.setHeader('Content-Type', 'text/event-stream');
             res.setHeader('Cache-Control', 'no-cache');
-            res.setHeader('Connection', 'keep-alive');
             res.flushHeaders();
             clients.add(res);
             req.on('close', () => clients.delete(res));

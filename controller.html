@@ -196,9 +196,25 @@
     #status-bar.right { color: #ff5555; }
     #status-bar.error { color: #ffaa00; }
     #status-bar.tilt  { color: #4f4; }
+
+    /* ── HTTPS 警告バナー ── */
+    #https-warn {
+      display: none;
+      background: #332200;
+      border: 1px solid #ff8800;
+      color: #ffaa33;
+      font-size: 12px;
+      padding: 8px 14px;
+      text-align: center;
+      flex-shrink: 0;
+      line-height: 1.5;
+    }
+    #https-warn.visible { display: block; }
   </style>
 </head>
 <body>
+  <div id="https-warn">⚠ 傾き検知には HTTPS が必要です。<br>アドレスを <strong>https://</strong> に変えてアクセスしてください。</div>
+
   <div id="header">
     <span id="header-title">トロッコ コントローラー</span>
     <button id="tilt-toggle">傾き: OFF</button>
@@ -233,6 +249,11 @@
     const toggleBtn = document.getElementById('tilt-toggle');
     const tiltSec   = document.getElementById('tilt-section');
     const needle    = document.getElementById('tilt-needle');
+
+    // ── HTTP 警告 ─────────────────────────────────────
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      document.getElementById('https-warn').classList.add('visible');
+    }
 
     // ── 傾き設定 ──────────────────────────────────────
     const THRESHOLD   = 22;  // この角度を超えたら選択 (°)

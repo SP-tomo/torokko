@@ -389,12 +389,18 @@ class TrolleyAdventure {
   }
 
   _connectController() {
-    const es = new EventSource('/api/ctrl/stream');
-    es.onmessage = (e) => {
-      const cmd = e.data.trim();
-      if (cmd === 'left' || cmd === 'right') this.selectChoice(cmd);
+    const connect = () => {
+      const es = new EventSource('/api/ctrl/stream');
+      es.onmessage = (e) => {
+        const cmd = e.data.trim();
+        if (cmd === 'left' || cmd === 'right') this.selectChoice(cmd);
+      };
+      es.onerror = () => {
+        es.close();
+        setTimeout(connect, 3000);
+      };
     };
-    es.onerror = () => es.close();
+    connect();
   }
 
   handleKeyDown(e) {
@@ -431,7 +437,11 @@ class TrolleyAdventure {
     if (this.paused || this.state !== GameState.QUESTION) return;
     const isNew = this.selectedChoice !== side;
     this.selectedChoice = side;
-    this.sounds.playSelect();
+    const now = Date.now();
+    if (!this._lastSelectMs || now - this._lastSelectMs > 80) {
+      this._lastSelectMs = now;
+      this.sounds.playSelect();
+    }
     this.els.choiceLeft.classList.toggle('selected',  side === 'left');
     this.els.choiceRight.classList.toggle('selected', side === 'right');
     this.els.trolley.className = `trolley tilt-${side}`;

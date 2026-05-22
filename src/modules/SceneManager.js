@@ -128,7 +128,7 @@ export class SceneManager {
     const loop = () => {
       this._frame++;
       this._z += this.speed * 5;
-      this._draw();
+      try { this._draw(); } catch (e) { console.warn('SceneManager draw error:', e); }
       this._raf = requestAnimationFrame(loop);
     };
     this._raf = requestAnimationFrame(loop);
@@ -396,7 +396,7 @@ export class SceneManager {
       case 'stalactite':    this._drawStalactite(ctx, x, y, s, false); break;
       case 'stalagmite':    this._drawStalactite(ctx, x, y, s, true);  break;
       case 'torch':         this._drawTorch(ctx, x, y, s, f);          break;
-      case 'crystal':       this._drawCrystal(ctx, x, y, s, '#a040ff', '#cc88ff'); break;
+      case 'crystal':       this._drawCrystal(ctx, x, y, s, 'rgba(160,64,255,0.3)', '#cc88ff'); break;
       case 'rock':          this._drawRock(ctx, x, y, s);              break;
       case 'tree':          this._drawTree(ctx, x, y, s, o.side);      break;
       case 'vine':          this._drawVine(ctx, x, y, s, f, o.phase);  break;
@@ -407,7 +407,7 @@ export class SceneManager {
       case 'relief':        this._drawRelief(ctx, x, y, s);            break;
       case 'banner':        this._drawBanner(ctx, x, y, s, o.variant); break;
       case 'ice_spike':     this._drawStalactite(ctx, x, y, s, o.wallY > 0, '#9dd8f0', '#c8eeff'); break;
-      case 'ice_crystal':   this._drawCrystal(ctx, x, y, s, '#4ab8e0', '#aadff8'); break;
+      case 'ice_crystal':   this._drawCrystal(ctx, x, y, s, 'rgba(74,184,224,0.3)', '#aadff8'); break;
       case 'snowdrift':     this._drawSnowdrift(ctx, x, y, s);         break;
       case 'coral':         this._drawCoral(ctx, x, y, s, o.variant);  break;
       case 'seaweed':       this._drawSeaweed(ctx, x, y, s, f, o.phase); break;
@@ -739,10 +739,10 @@ export class SceneManager {
     ctx.save(); ctx.translate(x, y);
     const h = 80*s, w = 25*s;
     const g = ctx.createLinearGradient(-w, 0, w, 0);
-    g.addColorStop(0, col1.replace(')', '').replace('rgb','rgba') + ',0.3)');
+    g.addColorStop(0, col1);
     g.addColorStop(0.4, col2);
     g.addColorStop(0.6, col2);
-    g.addColorStop(1, col1.replace(')', '').replace('rgb','rgba') + ',0.3)');
+    g.addColorStop(1, col1);
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.moveTo(-w, 0);
