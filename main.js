@@ -128,6 +128,7 @@ class TrolleyAdventure {
     this.els.choiceRight.onclick = () => this.selectChoice('right');
     this.els.pauseBtn.onclick  = () => this.togglePause();
     this.els.resumeBtn.onclick = () => this.togglePause();
+    this._connectController();
 
     this.updateScoreBoard();
     this.showOverlay('TROLLEY ADVENTURE', `4チーム対抗戦・全${this.questionCount}問`, 'ゲームスタート');
@@ -385,6 +386,15 @@ class TrolleyAdventure {
         this.enterJudging();
       }
     }, 50);
+  }
+
+  _connectController() {
+    const es = new EventSource('/api/ctrl/stream');
+    es.onmessage = (e) => {
+      const cmd = e.data.trim();
+      if (cmd === 'left' || cmd === 'right') this.selectChoice(cmd);
+    };
+    es.onerror = () => es.close();
   }
 
   handleKeyDown(e) {
