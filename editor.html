@@ -453,6 +453,7 @@
           <div style="width:18px;height:18px;border-radius:50%;background:${color};flex-shrink:0"></div>
           <h2 style="color:${color}">チーム ${id} — ${Q_COUNT}問</h2>
           <div class="panel-actions">
+            <button class="btn btn-blue" onclick="balanceAnswers('${id}')" title="左右の正解数が半々になるよう自動調整">⇄ 左右バランス</button>
             <button class="btn btn-gray" onclick="copyTeam('${id}')">コピー</button>
             <button class="btn btn-gray" onclick="pasteTeam('${id}')">貼り付け</button>
           </div>
@@ -528,6 +529,34 @@
         renderPanel(document.getElementById(`panel-${id}`), id);
         showToast(`チーム${id}のJSONを反映しました`);
       } catch(e) { alert('JSONエラー: ' + e.message); }
+    };
+
+    window.balanceAnswers = function(id) {
+      const qs = data[id];
+      const n  = qs.length;
+      const rightCount = Math.floor(n / 2); // 半分を右正解にする
+
+      // シャッフルしたインデックス配列を作成
+      const indices = Array.from({ length: n }, (_, i) => i)
+        .sort(() => Math.random() - 0.5);
+      const rightSet = new Set(indices.slice(0, rightCount));
+
+      qs.forEach((q, i) => {
+        const shouldBeRight = rightSet.has(i);
+        if (shouldBeRight && q.a !== 'right') {
+          // 左→右: l/r を入れ替えて正解を右にする
+          [q.l, q.r] = [q.r, q.l];
+          q.a = 'right';
+        } else if (!shouldBeRight && q.a !== 'left') {
+          // 右→左: l/r を入れ替えて正解を左にする
+          [q.l, q.r] = [q.r, q.l];
+          q.a = 'left';
+        }
+      });
+
+      const panel = document.getElementById(`panel-${id}`);
+      renderPanel(panel, id);
+      showToast(`チーム${id}: 左${n - rightCount}問・右${rightCount}問に調整しました`);
     };
 
     window.copyTeam = function(id) {

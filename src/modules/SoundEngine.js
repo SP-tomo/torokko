@@ -88,15 +88,31 @@ export class SoundEngine {
   }
 
   stopBGM() {
-    // Stop file BGM
     if (this.bgmAudio && !this.bgmAudio.paused) {
       this.bgmAudio.pause();
       this.bgmAudio.currentTime = 0;
     }
-    // Stop procedural BGM
     if (this.bgmInterval) {
       clearInterval(this.bgmInterval);
       this.bgmInterval = null;
+    }
+  }
+
+  pauseBGM() {
+    if (this.bgmAudio && !this.bgmAudio.paused) {
+      this.bgmAudio.pause();
+    }
+    if (this.bgmInterval) {
+      clearInterval(this.bgmInterval);
+      this.bgmInterval = null;
+    }
+  }
+
+  resumeBGM() {
+    if (this.bgmAudio) {
+      this.bgmAudio.play().catch(() => {});
+    } else {
+      this._startProceduralBGM();
     }
   }
 

@@ -404,13 +404,13 @@ class TrolleyAdventure {
       this._pausedSceneShake = this.scene.shake;
       this.scene.speed = 0;
       this.scene.shake = 0;
-      this.sounds.setVolume(0);
+      this.sounds.pauseBGM();
       this.els.pauseOverlay.classList.remove('hidden');
       this.els.pauseBtn.textContent = '▶';
     } else {
       this.scene.speed = this._pausedSceneSpeed;
       this.scene.shake = this._pausedSceneShake;
-      this.sounds.setVolume(0.5);
+      this.sounds.resumeBGM();
       this.els.pauseOverlay.classList.add('hidden');
       this.els.pauseBtn.textContent = '⏸';
       this.startTimer();

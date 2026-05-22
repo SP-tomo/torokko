@@ -870,13 +870,6 @@ html, body {
 /* Speed run */
 .running #bg-canvas { filter: blur(1px); }
 
-/* === CAMERA LEAN (choice selection) ================================= */
-.game-container {
-  transition: transform 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.game-container.lean-left  { transform: rotate(-2.5deg) translateX(-18px) scale(1.04); }
-.game-container.lean-right { transform: rotate( 2.5deg) translateX( 18px) scale(1.04); }
-
 /* === CAMERA FALL (wrong answer) ===================================== */
 .game-container.camera-fall {
   transform: rotate(30deg) translateY(55vh) scale(0.65);
